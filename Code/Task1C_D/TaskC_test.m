@@ -3,7 +3,6 @@ function EuclideanDist = TaskC_test(query_video, compare_video_file)
     % Read the vidoes
     file1 = dir(strcat('Code/DataR/',query_video));
     file2 = dir(strcat('Code/DataR/',compare_video_file));
-    
     query = VideoReader(file1.name);
     object = VideoReader(file2.name);
     
@@ -19,8 +18,8 @@ function EuclideanDist = TaskC_test(query_video, compare_video_file)
     EuclideanDist = 0;
     
     fid = fopen('Output/output_phase2_task1c.txt','a+');
-    fprintf(fid,'%s, ','framenumber','query_x','query_y','objx','objy','distance');
-    fprintf(fid,'\n');
+    fprintf(fid,'%s, ','framenumber','query_x','query_y','objx','objy');
+    fprintf(fid,'distance\n');
         
     while hasFrame(query) || hasFrame(object)
         q = readFrame(query);
@@ -37,8 +36,8 @@ function EuclideanDist = TaskC_test(query_video, compare_video_file)
         [matches,score] = siftmatch(D1,D2,1.5);
         for k=1:length(matches)
             fprintf(fid,'%d, ',Frame);
-            fprintf(fid,'%f, ',[F1(1,matches(1,k)),F1(2,matches(1,k)),F2(1,matches(2,k)),F2(2,matches(2,k)),score(k)]);
-            fprintf(fid,'\n');
+            fprintf(fid,'%f, ',[F1(1,matches(1,k)),F1(2,matches(1,k)),F2(1,matches(2,k)),F2(2,matches(2,k))]);
+            fprintf(fid,'%f\n',score(k));
             EuclideanDist = EuclideanDist+score(k);
         end
         Frame = Frame + 1;
