@@ -23,7 +23,7 @@ function matrix = similaritiyMatrix( input )
     end
     
     % Normalize the number
-    matrix = matrix/255;
+    matrix = 1 - matrix/255;
     
 end
 
