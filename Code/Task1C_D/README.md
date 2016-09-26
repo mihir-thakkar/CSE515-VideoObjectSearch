@@ -14,11 +14,11 @@ Example:
 	disp(TaskC_test('1R.mp4','2R.mp4'))
 
 Expected output:
+
 	1. Euclidean distance between given two videos.
 	2. An output file containing matched keypoints based on SIFT descriptor.
 	3. Format of output vectors:
 		<framenumber, queryx, queryy, objx, objy, euclidean_dist>
-
 		where;
 		framenumber - SIFT frame number.
 		queryx, queryy - coordinates of keypoints in query frame.
