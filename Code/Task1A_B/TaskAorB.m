@@ -75,18 +75,55 @@ end
 function distance = distanceFunctions(file_one, file_two, f1_y, f1_x, task_index)
 %iteratire throguh all the cells and calculate the Euclidean or quadratic Distance.
     sim = 0;
+    frame_number = file_one(1,2);
+    frame_file_one = file_one(file_one(:,2) == frame_number, :);
+    
+    frame_number = file_two(1,2);
+    frame_file_two = file_two(file_two(:,2) == frame_number, :);
+    
+    bins = length(frame_file_one(1, 4: end)); 
     
     if task_index == 0
+        
+        normal = normalize(frame_file_one, frame_file_two, task_index, bins);
+        
         for i =1 :f1_y
-            sim = sim + euclideanDistance(file_one(i, 4: end), file_two(i, 4: end));        
+            sim = sim + (euclideanDistance(file_one(i, 4: end), file_two(i, 4: end))/normal);        
         end
     else
         %Compute the similarity matrix
         similaritiy_matrix = similaritiyMatrix(f1_x - 3); 
+        
+        normal = normalize(frame_file_one, frame_file_two, task_index, bins);
         for i =1 :f1_y
-            sim = sim + quadraticDistance(similaritiy_matrix, file_one(i, 4: end), file_two(i, 4: end));        
+            sim = sim + (quadraticDistance(similaritiy_matrix, file_one(i, 4: end), file_two(i, 4: end))/normal);        
         end
     end
     
     distance = sim/f1_y;
+end
+
+
+function max_value = normalize(frame_file_one, frame_file_two, task_index, bins)
+    
+    if bins == 1
+        max_value = 1; 
+    else       
+        pixles_f1 = sum(sum(frame_file_one(:,4:end)));
+        pixles_f2 = sum(sum(frame_file_two(:,4:end)));
+        
+        if task_index == 0
+            max_value = (pixles_f1^2 + pixles_f2^2)^(1/2); 
+        else
+            similaritiy_matrix = similaritiyMatrix(bins); 
+            A = zeros(1,bins);
+            B = zeros(1,bins);
+             
+            A(1) = pixles_f1;
+            B(end) = pixles_f2;
+            
+            max_value = quadraticDistance(similaritiy_matrix, A, B);
+        end
+    end
+    
 end
