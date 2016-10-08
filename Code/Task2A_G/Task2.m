@@ -1,10 +1,11 @@
-function Task2(v, a, b, inFile, type, k, outputPath)
+function Task2(v, a, b, inFile, type, k, videoDir, outputPath)
 % v-- video index
 % a-- start query frame index
 % b-- end query frame index
-% inFile-- input file such as in_file.chst
+% inFile-- input data file such as in_file.chst
 % type-- the method will be used to compute the distance
 % k-- the number of ouput sequences
+% videoDir--  input videos directory
 % outputPath-- the path for output videos
 
 wholeMatrix = dlmread(inFile);
@@ -43,12 +44,13 @@ end
 seqLength = b - a + 1;
 % Create and output videos according to the similar sequence indices
 for i = 1 : k
-    writeVideo(similarSeqIndices(i, 1), similarSeqIndices(i, 2), seqLength, outputPath);
+    writeVideo(similarSeqIndices(i, 1), similarSeqIndices(i, 2), seqLength, videoDir, outputPath);
 end
 end
 
-function writeVideo(vi, fi, frameCount, outputPath)
-vPath = getVideoPath(vi);
-% TODO: read the sequence from the start frame index of fi and write it to a new
+function writeVideo(vi, fi, frameCount, videoDir, outputPath)
+% get the video path and name
+vPath = getVideoPath(videoDir, vi);
+% TODO: read the sequence from the start frame index fi and write it to a new
 % video file under outputPath
 end
