@@ -5,7 +5,7 @@ fileID = fopen('output.sift.index');
 fileIndex = textscan(fileID,'%s %d','delimiter','=');
 fclose(fileID);
 objectIndex = 1;
-queryIndex = 3;
+queryIndex = 2;
 objectFile = VideoReader(strcat('DataR/',fileIndex{1}{find(fileIndex{2}(:,1) == objectIndex)}));
 queryFile = VideoReader(strcat('DataR/',fileIndex{1}{find(fileIndex{2}(:,1) == queryIndex)}));
 
