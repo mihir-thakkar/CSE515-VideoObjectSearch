@@ -15,3 +15,4 @@ sudo pip install pandas
 
 For Windows download the files from: 
 http://www.lfd.uci.edu/~gohlke/pythonlibs/
+Then use pip install on those files
