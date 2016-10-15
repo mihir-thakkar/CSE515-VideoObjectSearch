@@ -12,3 +12,7 @@ sudo pip install scikit-learn
 sudo pip install videosequence
 sudo pip install imageio
 sudo pip install pandas
+
+For Windows download the files from: 
+http://www.lfd.uci.edu/~gohlke/pythonlibs/
+Then use pip install on those files
