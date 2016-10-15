@@ -1,4 +1,4 @@
-function task2(v, a, b, inFile, type, k)
+function task2(v, a, b, inFile, type, k, outputPath)
 %     v = 1;
 %     a = 3;
 %     b = 5;
@@ -42,40 +42,34 @@ function task2(v, a, b, inFile, type, k)
                          end
 
                      end
-                end
-                fclose(fidq);
+                 end
+                
                 %get similarity -> simivalue = task1_a() 
                 if (type == 'a')
                     %%%call task1_a input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;%task1_a() <- i dont know how to call
+                    % simivalue = task1_a() <- i dont know how to call
                 elseif (type == 'b')
                     %%%call task1_b input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;
                 elseif (type == 'c')
                     %%%call task1_c input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;
                 elseif (type == 'd')
                     %%%call task1_d input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;
                 elseif (type == 'e')
                     %%%call task1_e input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;
                 elseif (type == 'f')
                     %%%call task1_f input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;
                 elseif (type == 'g')
                     %%%call task1_g input 2 files : framerange.txt , queryframerange.txt
                     %%%store the return similarity value in (int)variable simivalue
-                    simivalue = rand;
                 end
                 fprintf(fido, '%d %d %d %d\n', simivalue, video, frame, frame+b-a-1); %fprint the compared similarity value 
-                
+
             end
         end
     end
@@ -85,13 +79,12 @@ function task2(v, a, b, inFile, type, k)
     % -> output the result as video (it will create k videos)
     S = dlmread('similaritycompare.txt');
     [B,I] = sort(S(:,1),'descend');
-    list = dir('*.mp4');
     for kk=1:k
         matchvideo = VideoReader(list(S(I(kk), 2)).name);
         createvideofilename = [ num2str(kk) '_similar.avi'];
         outputVideo = VideoWriter(createvideofilename);
         outputVideo.FrameRate = matchvideo.FrameRate;
-        open(outputVideo)
+        
         for ii = S(I(kk), 3):S(I(kk), 4)
            img = read(matchvideo, ii);
            writeVideo(outputVideo,img)
