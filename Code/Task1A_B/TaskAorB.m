@@ -1,4 +1,4 @@
-function sim = TaskAorB(video_file_number, compare_video_file_number, database, task_index)
+function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, database,task_index)
 % Calculate the Euclidean or Quadratic distance according to the parameter
 % Return an similarity between [0-1]. 
 % of task_index(task_index == 0 --> Euclidean, else --> Quadratic).
@@ -6,10 +6,10 @@ function sim = TaskAorB(video_file_number, compare_video_file_number, database, 
 % Assuming missing frames are completely different, therefore they have a distance on 1. 
 
     %Get the matrix for file one
-    file_one = retriveDataforFile(database, video_file_number); 
+    file_one = retriveDataforFile(index_file, database, video_file_name); 
         
     %Get the matrix for file two
-    file_two = retriveDataforFile(database, compare_video_file_number);
+    file_two = retriveDataforFile(index_file, database, compare_video_file_name);
     
     %frames size of the two foles
     frames_f1 = file_one(end, 2);
@@ -119,47 +119,6 @@ function distance = distanceFunctions(file_one, file_two, f1_y, f1_x, task_index
     
     %take the average over all the frames
     distance = sim/f1_y;
-end
-
-
-function max_value = normalizeFrame(frame_file_one, frame_file_two, task_index, bins)
-    %return the max value possible for a frame to frame comparison
-    
-    %If there is only one bin
-    if bins == 1
-        
-        %Get the resultion of each frame
-        pixles_f1 = sum(sum(frame_file_one(:,4:end)));
-        pixles_f2 = sum(sum(frame_file_two(:,4:end)));
-        
-        max_value = abs(pixles_f1 - pixles_f2); 
-        
-        if max_value == 0
-            max_value = 1; 
-        end
-    else
-        %If there are more than one bin
-        
-        %Get the resultion of each frame
-        pixles_f1 = sum(sum(frame_file_one(:,4:end)));
-        pixles_f2 = sum(sum(frame_file_two(:,4:end)));
-        
-        % for task zero, the max is sqrt((pixles_f1-0)^2+ (0-pixles_f2)^2)
-        if task_index == 0
-            max_value = (pixles_f1^2 + pixles_f2^2)^(1/2); 
-        else
-        % for task one, the max is sqrt([pixles_f1,0]*similaritiyMatrix*[0,pixles_f2]')
-            similaritiy_matrix = similaritiyMatrix(bins); 
-            A = zeros(1,bins);
-            B = zeros(1,bins);
-             
-            A(1) = pixles_f1;
-            B(end) = pixles_f2;
-            
-            max_value = quadraticDistance(similaritiy_matrix, A, B);
-        end
-    end
-    
 end
 
 
