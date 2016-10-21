@@ -39,15 +39,23 @@ function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, da
         %  compare [1,2] with [6,7] and [2,3] with [6,7]
         
         for i=0 : difference
-            distance_vectors(1, i+1) = distanceFunctions(file_one(i*r+1:f2_y +i*r, :), file_two, f2_y, f2_x, task_index);     
+            %
+            sum_frames_front = 0; 
+            for j = 0 : i-1
+                sum_frames_front = sum_frames_front + distanceFunctions(file_one(j*r+1:r+j*r, :), file_two(1:r,:), 1, f2_x, task_index); 
+            end
+            
+            sum_frames_back = 0; 
+            for j = 0 : difference-1-i
+                sum_frames_back = sum_frames_back + distanceFunctions(file_one(f2_y+j*r+1 : f2_y+j*r+r, :), file_two(1:r,:), 1, f2_x, task_index); 
+            end
+            
+            distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_one(i*r+1:f2_y +i*r, :), file_two, f2_y, f2_x, task_index))/(frames_f1*r);     
         end
         
         %return the min dsitance
-        diff = min(distance_vectors)*(frames_f2/frames_f1); 
+        diff = min(distance_vectors); 
         
-        %consider number of frames into the difference, return max
-        diff = diff + (difference/frames_f1); 
-       
     elseif frames_f1 < frames_f2
         % file_two has more frames is greater than others
         
@@ -60,14 +68,22 @@ function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, da
        
         % Get all the frames comparison
         for i=0 : difference
-            distance_vectors(1, i+1) = distanceFunctions(file_two(i*r+1:f1_y +i*r, :), file_one, f1_y, f1_x, task_index);   
+            
+            sum_frames_front = 0; 
+            for j = 0 : i-1
+                sum_frames_front = sum_frames_front + distanceFunctions(file_two(j*r+1:r+j*r, :), file_one(1:r,:), 1, f1_x, task_index); 
+            end
+            
+            sum_frames_back = 0; 
+            for j = 0 : difference-1-i
+                sum_frames_back = sum_frames_back + distanceFunctions(file_two(f1_y+j*r+1 : f1_y+j*r+r, :), file_one(1:r,:), 1, f1_x, task_index); 
+            end
+            
+            distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_two(i*r+1:f1_y +i*r, :), file_one, f1_y, f1_x, task_index))/(frames_f2*r);   
         end
         
         %return the min dsitance
-        diff = min(distance_vectors)*(frames_f1/frames_f2); 
-        
-        %consider number of frames into the difference, return max
-        diff = diff + (difference/frames_f2); 
+        diff = min(distance_vectors); 
         
     else
        % They have the same frame size
@@ -118,7 +134,7 @@ function distance = distanceFunctions(file_one, file_two, f1_y, f1_x, task_index
     end
     
     %take the average over all the frames
-    distance = sim/f1_y;
+    distance = sim;
 end
 
 
