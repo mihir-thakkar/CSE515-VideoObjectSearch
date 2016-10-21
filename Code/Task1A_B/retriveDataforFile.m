@@ -1,17 +1,17 @@
-function file_matrix = retriveDataforFile( indexFile ,database, file_name)
+function file_matrix = retriveDataforFile(file_name)
 %Get the file information about a video
 
     %Get the index for the file
-    file_number = getFileNumber(indexFile, file_name); 
+    file_number = getFileNumber(file_name); 
     
     %Get the file name
-    whole_db = dlmread(database);
+    whole_db = dlmread('in_file.chst');
     file_matrix =  whole_db(whole_db(:,1) == file_number, :);
 end
 
-function [number_file] = getFileNumber(indexFile, file_name)
+function [number_file] = getFileNumber(file_name)
     
-    fileID = fopen(indexFile,'r');
+    fileID = fopen('in_file_index.chst','r');
     number_file = 0; 
     while ~feof(fileID)
         number_file = number_file +1;
