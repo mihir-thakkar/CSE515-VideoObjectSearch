@@ -1,4 +1,4 @@
-function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, database,task_index)
+function sim = TaskAorB( video_file_name, compare_video_file_name, task_index)
 % Calculate the Euclidean or Quadratic distance according to the parameter
 % Return an similarity between [0-1]. 
 % of task_index(task_index == 0 --> Euclidean, else --> Quadratic).
@@ -6,10 +6,10 @@ function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, da
 % Assuming missing frames are completely different, therefore they have a distance on 1. 
 
     %Get the matrix for file one
-    file_one = retriveDataforFile(index_file, database, video_file_name); 
+    file_one = retriveDataforFile(video_file_name); 
         
     %Get the matrix for file two
-    file_two = retriveDataforFile(index_file, database, compare_video_file_name);
+    file_two = retriveDataforFile(compare_video_file_name);
     
     %frames size of the two foles
     frames_f1 = file_one(end, 2);
@@ -47,7 +47,7 @@ function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, da
             
             sum_frames_back = 0; 
             for j = 0 : difference-1-i
-                sum_frames_back = sum_frames_back + distanceFunctions(file_one(f2_y+j*r+1 : f2_y+j*r+r, :), file_two(1:r,:), 1, f2_x, task_index); 
+                sum_frames_back = sum_frames_back + distanceFunctions(file_one(f2_y+j*r+1 : f2_y+j*r+r, :), file_two(end-r+1:end,:), 1, f2_x, task_index); 
             end
             
             distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_one(i*r+1:f2_y +i*r, :), file_two, f2_y, f2_x, task_index))/(frames_f1*r);     
@@ -76,7 +76,7 @@ function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, da
             
             sum_frames_back = 0; 
             for j = 0 : difference-1-i
-                sum_frames_back = sum_frames_back + distanceFunctions(file_two(f1_y+j*r+1 : f1_y+j*r+r, :), file_one(1:r,:), 1, f1_x, task_index); 
+                sum_frames_back = sum_frames_back + distanceFunctions(file_two(f1_y+j*r+1 : f1_y+j*r+r, :), file_one(end-r+1:end,:), 1, f1_x, task_index); 
             end
             
             distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_two(i*r+1:f1_y +i*r, :), file_one, f1_y, f1_x, task_index))/(frames_f2*r);   
@@ -91,7 +91,7 @@ function sim = TaskAorB(index_file, video_file_name, compare_video_file_name, da
        %Get size of file_one
        [f1_y, f1_x] = size(file_one); 
        
-       diff = distanceFunctions(file_one, file_two, f1_y, f1_x, task_index); 
+       diff = (distanceFunctions(file_one, file_two, f1_y, f1_x, task_index)/f1_y); 
     end
     
     %compute the similarity between [1-0]
