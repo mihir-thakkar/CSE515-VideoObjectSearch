@@ -125,9 +125,19 @@ def findSubsequence(queryIndex, a, b, k):
         allSeq = np.vstack([allSeq, final_seq_from_object])
         allSeq = allSeq[np.argsort(allSeq[:, 1])]
         allSeq = allSeq[0:k, :]
-    saveAndShowSubsequence(allSeq)
+    saveAndShowSubsequence(queryIndex, a, b, allSeq)
 
-def saveAndShowSubsequence(kseq):
+def saveAndShowSubsequence(queryIndex, a, b, kseq):
+    #Saving query seq
+    objectFile = imageio.get_reader('DataR/' + revIndex[int(queryIndex)], 'ffmpeg')
+    writer = imageio.get_writer(
+        'querySeq fn' + `int(a)` + '-' + `int(b)` + ' ' + `revIndex[int(queryIndex)]`, fps=30)
+    for i in range(int(a), int(b + 1)):
+        oimage = objectFile.get_data(i)
+        writer.append_data(oimage)
+    writer.close()
+
+    # Saving found seq
     for index, row in enumerate(kseq):
         objectFile = imageio.get_reader('DataR/' + revIndex[int(row[1])], 'ffmpeg')
         writer = imageio.get_writer('seq' + `index` + ' fn' + `int(row[2])` + '-' + `int(row[3])` + ' ' + `revIndex[int(row[1])]`, fps=30)
@@ -140,12 +150,18 @@ if __name__ == '__main__':
     preprocessing()
     flag = 1
     while flag :
-        d = int(input("Enter the target dimensionality: "))
-        if d <=0 :
-            print 'Target Dimensionality must be positive.'
-        elif d > (database.shape[1]-3) :
-            print 'Target Dimensionality must be less or equal to existing dimensionality.'
-        else : flag = 0
-    reduce(d)
+        queryFileName = input("Enter the query file name: ")
+        if queryFileName in fileIndex:
+            a = int(input("Enter the query sequence start frame num: "))
+            b = int(input("Enter the query sequence end frame num: "))
+            k = int(input("Enter the k : "))
+            if k <= 0:
+                print 'k must be positive.'
+            else:
+                flag = 0
+        else:
+            print 'Given file name does not exist in database.'
+
+    findSubsequence(fileIndex[queryFileName], a, b, k)
 
 
