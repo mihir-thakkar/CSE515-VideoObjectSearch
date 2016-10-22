@@ -1,0 +1,6 @@
+#eig_vals, eig_vecs = np.linalg.eig(pca.components_)
+#score = pca.components_
+#score = np.array([r+abs(r.min())+abs(r.max()) for r in score])
+#score = np.array([r/sum(r) for r in score])
+#score = np.array([r/sum(r) for r in score])
+#var1=np.cumsum(np.round(pca.components_, decimals=4)*100)
