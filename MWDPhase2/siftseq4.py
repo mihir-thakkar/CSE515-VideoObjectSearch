@@ -5,17 +5,17 @@ import pylab
 import imageio
 
 
-objectIndex = 3;
-queryIndex = 1;
-a = 1;
-b = 10;
+objectIndex = 3
+queryIndex = 1
+a = 1
+b = 10
 
-fileIndex = np.genfromtxt('output.sift.index', delimiter="=", dtype=None);
+fileIndex = np.genfromtxt('output.sift.index', delimiter="=", dtype=None)
 fileIndex = dict(fileIndex)
 objectFile = imageio.get_reader('DataR/'+fileIndex[objectIndex],  'ffmpeg')
 queryFile = imageio.get_reader('DataR/'+fileIndex[queryIndex],  'ffmpeg')
-myseq1 = None;
-myseq2 = None;
+myseq1 = None
+myseq2 = None
 
 frameToFrame = np.loadtxt('outfile.sseq', delimiter=",");
 frameToFrameDist = np.loadtxt('outfile.smseq', delimiter=",");
