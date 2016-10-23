@@ -13,7 +13,7 @@ SIFT_VECTOR_START_COL = 7
 def preprocessing():
     global fileIndex, revIndex, database
     # Reading database
-    database = np.loadtxt('../../Input/in_file.sift', delimiter=",")
+    database = np.loadtxt('../../Input/in_file.chst.txt', delimiter=",")
 
     #Creating file index
     fileIndex = np.genfromtxt('../../Input/in_file.index', delimiter="=", dtype=None, skip_header=1)
@@ -21,25 +21,63 @@ def preprocessing():
     #revIndex = dict([i.reverse() for i in fileIndex])
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
+def getDistanceEuclidean( one_query_frame, two_query_frame, res):
+    # type: (object, object, object) -> object
+    total_distance = 0.0
 
-def myMethod(object, query):
-    oframeNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
-    qframeNos = np.transpose(np.unique(query[:, FRAME_NUM_COL]))
-    frameToFrameIndex = np.array([]).reshape(0, oframeNos.size)
-    frameToFrameDist = np.array([]).reshape(0, oframeNos.size)
-    for qframeNo in np.nditer(qframeNos):
-        qframe = query[query[:, 1] == qframeNo, SIFT_VECTOR_START_COL:]
-        frameDist = np.array([]).reshape(0, 3)
-        for oframeNo in np.nditer(oframeNos):
-            oframe = object[object[:, 1] == oframeNo, SIFT_VECTOR_START_COL:];
-            frameD = cdist(qframe, oframe, 'euclidean');
-            minD = np.amin(frameD, axis=1);
-            meanD = np.mean(minD);
-            medianD = np.median(minD);
-            frameDist = np.vstack([frameDist, [oframeNo, meanD, medianD]])
-        frameDist = frameDist[np.argsort(frameDist[:, 1])]
-        frameToFrameIndex = np.vstack([frameToFrameIndex, frameDist[:, 0].T])
-        frameToFrameDist = np.vstack([frameToFrameDist, frameDist[:, 1].T])
+    for j in range(0, res):
+        one_query_cell = one_query_frame[j, 3:]
+        two_query_cell = two_query_frame[j, 3:]
+
+        normal = normalizeCellEuclidean(one_query_cell, two_query_cell, int(len(one_query_cell)))
+        cell_distance = np.sqrt(sum((one_query_cell - two_query_cell)**2))
+
+        total_distance = total_distance + cell_distance/normal
+
+    return total_distance/res
+
+def normalizeCellEuclidean(file_one, file_two, bins):
+
+    pixles_f1 = sum(file_one)
+    pixles_f2 = sum(file_two)
+
+    if bins == 1:
+        return abs(pixles_f1-pixles_f2)
+    else:
+        return np.sqrt(pixles_f1 ** 2 + pixles_f2 ** 2)
+
+def myMethod(object_file, query_file_frames, a, b):
+
+    # Gets the max object frames
+    max_object_frames = int(object_file[-1, 1])
+
+    # Get the number for r
+    res = int(object_file[-1, 2])
+
+    # Gets the distance matrix
+    distanceMatrix = np.array([]).reshape(object_file.shape[0].)
+
+    # Start frames to frames
+    for i in range(a, b):
+        one_query_frame = query_file_frames[query_file_frames[:, 1] == i, :]
+        add_list = list()
+
+        for j in range(1, max_object_frames):
+            two_query_frame = object_file[object_file[:, 1] == j, :]
+
+            # Compare the distance
+            distance = getDistanceEuclidean(one_query_frame, two_query_frame, res)
+
+            add_list.append(distance)
+
+        distanceMatrix.append(add_list)
+
+    # Sort and get frameToFrameIndex and frameToFrameDist
+
+    for i in range(a, b):
+
+
+
     return (frameToFrameIndex, frameToFrameDist)
 
 def findSubsequence(queryIndex, a, b, k):
@@ -56,7 +94,7 @@ def findSubsequence(queryIndex, a, b, k):
         object = database[database[:, VIDEO_NUM_COL] == objectIndex, 0:]
         all_seq_from_object = np.array([]).reshape(0, 4)
         # Call function here and get these two matrix
-        (frameToFrameIndex, frameToFrameDist) = myMethod(object, query)
+        (frameToFrameIndex, frameToFrameDist) = myMethod(object, query, a, b)
         (rowLen, colLen) = frameToFrameIndex.shape
         for c in range(0, colLen):
             seq = np.array([])
