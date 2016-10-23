@@ -13,6 +13,7 @@ MV_RY_COL = 4
 
 database = None
 def preprocessing():
+
     global fileIndex, revIndex, database, R
     #Original database
     database = np.loadtxt('../../Input/in_file.sift', delimiter=",")
