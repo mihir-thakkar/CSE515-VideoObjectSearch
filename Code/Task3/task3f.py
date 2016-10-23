@@ -17,7 +17,7 @@ def reduce(d):
     kmeans.fit(allVectors)
     transformedKmeans = kmeans.transform(allVectors);
     kmeans_database = np.column_stack((database[:, 0:3], transformedKmeans))
-    np.savetxt('../Input/in_file_d.mkm', kmeans_database, delimiter=',', fmt="%d,%d,%d," + "%.4f," * d)
+    np.savetxt('../Input/in_file_d.mkm', kmeans_database, delimiter=',', fmt="%d,%d,%d" + ",%.4f" * d)
     score = kmeans.cluster_centers_
     score_mat = np.array([]).reshape(0, 3)
     for i in range(0, score.shape[0]):

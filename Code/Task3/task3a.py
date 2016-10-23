@@ -4,7 +4,7 @@ from sklearn.decomposition import PCA
 database = None
 def preprocessing():
     global database
-    database = np.loadtxt('../Input/in_file.chst', delimiter=",")
+    database = np.loadtxt('../../Input/in_file.chst.txt', delimiter=",")
 
 def reduce(d):
     allVectors = database[:, 3:]
@@ -12,13 +12,13 @@ def reduce(d):
     pca.fit(allVectors)
     transformedPCA = pca.transform(allVectors);
     pca_database = np.column_stack((database[:, 0:3], transformedPCA))
-    np.savetxt('../Input/in_file_d.cpca', pca_database, delimiter=',', fmt="%d,%d,%d," + "%.4f," * d)
+    np.savetxt('../../Input/in_file_d.cpca', pca_database, delimiter=',', fmt="%d,%d,%d" + ",%.4f" * d)
     score = pca.components_
     score_mat = np.array([]).reshape(0, 3)
     for i in range(0, score.shape[0]):
         for j in range(0, score.shape[1]):
             score_mat = np.vstack([score_mat, [i + 1, j + 1, score[i, j]]])
-    np.savetxt('../Input/in_file_d.cpca.score', score_mat, delimiter=',', fmt="%d,%d,%f")
+    np.savetxt('../../Input/in_file_d.cpca.score', score_mat, delimiter=',', fmt="%d,%d,%f")
 
 if __name__ == '__main__':
     preprocessing()
