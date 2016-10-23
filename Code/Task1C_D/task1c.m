@@ -2,7 +2,7 @@ function similarity = task1c(queryInput, objectInput)
 
     % SIFT vectors database and video names meta data
     database = dlmread('Input/in_file.sift');
-    fileID = fopen('Input/in_file.index');
+    fileID = fopen('Input/in_file.index.txt');
     fileIndex = textscan(fileID,'%s %d','delimiter','=','headerLines', 1);
     fclose(fileID);
 
