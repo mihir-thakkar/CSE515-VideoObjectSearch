@@ -40,15 +40,15 @@ function sim = task1b( video_file_name, compare_video_file_name)
             %
             sum_frames_front = 0; 
             for j = 0 : i-1
-                sum_frames_front = sum_frames_front + distanceFunctions(file_one(j*r+1:r+j*r, :), file_two(1:r,:), 1); 
+                sum_frames_front = sum_frames_front + distanceFunctions(file_one(j*r+1:r+j*r, :), file_two(1:r,:), 1,f2_x); 
             end
             
             sum_frames_back = 0; 
             for j = 0 : difference-1-i
-                sum_frames_back = sum_frames_back + distanceFunctions(file_one(f2_y+j*r+1 : f2_y+j*r+r, :), file_two(end-r+1:end,:), 1); 
+                sum_frames_back = sum_frames_back + distanceFunctions(file_one(f2_y+j*r+1 : f2_y+j*r+r, :), file_two(end-r+1:end,:), 1,f2_x); 
             end
             
-            distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_one(i*r+1:f2_y +i*r, :), file_two, f2_y))/(frames_f1*r);     
+            distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_one(i*r+1:f2_y +i*r, :), file_two, f2_y,f2_x))/(frames_f1*r);     
         end
         
         %return the min dsitance
@@ -69,15 +69,15 @@ function sim = task1b( video_file_name, compare_video_file_name)
             
             sum_frames_front = 0; 
             for j = 0 : i-1
-                sum_frames_front = sum_frames_front + distanceFunctions(file_two(j*r+1:r+j*r, :), file_one(1:r,:), 1); 
+                sum_frames_front = sum_frames_front + distanceFunctions(file_two(j*r+1:r+j*r, :), file_one(1:r,:), 1,f1_x); 
             end
             
             sum_frames_back = 0; 
             for j = 0 : difference-1-i
-                sum_frames_back = sum_frames_back + distanceFunctions(file_two(f1_y+j*r+1 : f1_y+j*r+r, :), file_one(end-r+1:end,:), 1); 
+                sum_frames_back = sum_frames_back + distanceFunctions(file_two(f1_y+j*r+1 : f1_y+j*r+r, :), file_one(end-r+1:end,:), 1,f1_x); 
             end
             
-            distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_two(i*r+1:f1_y +i*r, :), file_one, f1_y))/(frames_f2*r);   
+            distance_vectors(1, i+1) = (sum_frames_back + sum_frames_front + distanceFunctions(file_two(i*r+1:f1_y +i*r, :), file_one, f1_y,f1_x))/(frames_f2*r);   
         end
         
         %return the min dsitance
@@ -89,7 +89,7 @@ function sim = task1b( video_file_name, compare_video_file_name)
        %Get size of file_one
        [f1_y, f1_x] = size(file_one); 
        
-       diff = (distanceFunctions(file_one, file_two, f1_y)/f1_y); 
+       diff = (distanceFunctions(file_one, file_two, f1_y,f1_x)/f1_y); 
     end
     
     %compute the similarity between [1-0]
@@ -110,7 +110,7 @@ end
 
 function [number_file] = getFileNumber(file_name)
     
-    fileID = fopen('Input/in_file.index1','r');
+    fileID = fopen('Input/in_file.index','r');
     fileIndex = textscan(fileID,'%s %d','delimiter','=','headerLines', 1);
     fclose(fileID);
     
@@ -152,7 +152,7 @@ function matrix = similaritiyMatrix( input )
     
 end
 
-function distance = distanceFunctions(file_one, file_two, f1_y)
+function distance = distanceFunctions(file_one, file_two, f1_y, f1_x)
 %iteratire throguh all the cells and calculate the Quadratic Distance.
     sim = 0;    
     bins = length(file_one(1, 4: end)); 
@@ -161,7 +161,7 @@ function distance = distanceFunctions(file_one, file_two, f1_y)
         
     for i =1 :f1_y
         %Get the max distance for the cells
-        normal = normalizeCell(file_one(i, :), file_two(i, :), task_index, bins);
+        normal = normalizeCell(file_one(i, :), file_two(i, :), bins);
             
         %compute the quadratic distance for the cells
         sim = sim + (quadraticDistance(similaritiy_matrix, file_one(i, 4: end), file_two(i, 4: end))/normal);        
