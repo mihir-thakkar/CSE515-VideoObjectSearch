@@ -1,49 +1,90 @@
 import numpy as np
+from scipy.spatial.distance import cdist
 import imageio
 
-global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SEQ_BREAK_THRESHOLD, SIFT_VECTOR_START_COL, MIN_FRAMES_PREC
+global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SEQ_BREAK_THRESHOLD, SIFT_VECTOR_START_COL
 START_COL = 0
 VIDEO_NUM_COL = 0
 FRAME_NUM_COL = 1
 CELL_NUM_COL = 3
 SEQ_BREAK_THRESHOLD = 5
 SIFT_VECTOR_START_COL = 7
-MIN_FRAMES_PREC = 0.25
 
 def preprocessing():
     global fileIndex, revIndex, database
     # Reading database
-    database = np.loadtxt('../../Input/in_file.chst.txt', delimiter=",")
+    database = np.loadtxt('../../Input/in_file_d.cpca', delimiter=",")
 
     #Creating file index
     fileIndex = np.genfromtxt('../../Input/in_file.index', delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
-def getDistanceEuclidean( one_query_frame, two_query_frame, res):
-    # type: (object, object, object) -> object
+def getDistanceQuadratic( one_query_frame, two_query_frame, res):
     total_distance = 0.0
 
+    # Get the sim matrix
+    bins = int(len(one_query_frame[1, 3:]))
+    simMatrix = similaritiyMatrix(bins)
+
+    # Compute the distance for each cell
     for j in range(0, res):
         one_query_cell = one_query_frame[j, 3:]
         two_query_cell = two_query_frame[j, 3:]
 
-        normal = normalizeCellEuclidean(one_query_cell, two_query_cell, int(len(one_query_cell)))
+        normal = normalizeCellQuadratic(one_query_cell, two_query_cell, simMatrix, bins)
         cell_distance = np.sqrt(sum((one_query_cell - two_query_cell)**2))
 
         total_distance = total_distance + cell_distance/normal
 
     return total_distance/res
 
-def normalizeCellEuclidean(file_one, file_two, bins):
+def similaritiyMatrix (bins):
 
-    pixles_f1 = sum(abs(file_one))
-    pixles_f2 = sum(abs(file_two))
+    # Initialize the similaritiy matrix
+    simMatrix = np.ones((bins, bins))
+
+    # Edges
+    edges = np.ones((bins+1, 1))
+    mid_edges = np.ones((bins, 1))
+
+    # Compute the edges
+    edges[0] = 0
+    dis_edges = 255 / float(bins)
+
+    for edges_i in range(1, bins+1):
+        edges[edges_i] = edges[edges_i-1] + dis_edges
+
+    # Compute the midpoints
+    for mid_i in range(0, bins):
+        mid_edges[mid_i] = (edges[mid_i] + edges[mid_i+1]) /2
+
+    # Compute the Matrix
+    for tall in range(0, bins):
+        for wide in range(0, bins):
+            simMatrix[tall][wide] = abs(mid_edges[tall] - mid_edges[wide])
+
+    simMatrix = 1 - simMatrix / 255
+
+    return simMatrix
+
+def normalizeCellQuadratic(file_one, file_two, simMatrix, bins):
+    pixles_f1 = sum(file_one)
+    pixles_f2 = sum(file_two)
 
     if bins == 1:
-        return abs(pixles_f1-pixles_f2)
+        return abs(pixles_f1 - pixles_f2)
     else:
-        return np.sqrt(pixles_f1 ** 2 + pixles_f2 ** 2)
+        f1_vector = np.zeros((1, bins))
+        f2_vector = np.zeros((bins, 1))
+        f1_vector[0][0] = pixles_f1
+        f2_vector[-1] = pixles_f2
+
+        results = np.multiply(f1_vector, simMatrix)
+        results = np.multiply(f2_vector, results)
+
+        return np.sqrt(results[-1][0])
+
 
 def myMethod(object, query, a, b):
 
@@ -67,7 +108,7 @@ def myMethod(object, query, a, b):
             two_query_frame = object[object[:, FRAME_NUM_COL] == j, :]
 
             # Compare the distance
-            distance = getDistanceEuclidean(one_query_frame, two_query_frame, res)
+            distance = getDistanceQuadratic(one_query_frame, two_query_frame, res)
             frameDist = np.vstack([frameDist, [j, distance]])
 
         # Sort and get frameToFrameIndex and frameToFrameDist
@@ -147,9 +188,6 @@ def findSubsequence(queryIndex, a, b, k):
 
         # Calculating top k sequences from this object and finally adding to all sequences
         # and again reducing to final k in database
-        #object_file = database[database[:, 0] == object_file, :]
-
-        all_seq_from_object = all_seq_from_object[(all_seq_from_object[:, 3]-all_seq_from_object[:, 2]) > ((b-a+1)*MIN_FRAMES_PREC), :]
         all_seq_from_object = all_seq_from_object[np.argsort(all_seq_from_object[:, 1])]
         final_seq_from_object = np.array([]).reshape(0, 4);
         for v in np.unique(all_seq_from_object[:, 3]):

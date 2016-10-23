@@ -13,10 +13,10 @@ MIN_FRAMES_PREC = 0.25
 def preprocessing():
     global fileIndex, revIndex, database
     # Reading database
-    database = np.loadtxt('../../Input/in_file.chst.txt', delimiter=",")
+    database = np.loadtxt('../../Input/in_file_d.cpca', delimiter=",")
 
     #Creating file index
-    fileIndex = np.genfromtxt('../../Input/in_file.index', delimiter="=", dtype=None, skip_header=1)
+    fileIndex = np.genfromtxt('../../Input/in_file.index2.txt', delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
@@ -31,7 +31,7 @@ def getDistanceEuclidean( one_query_frame, two_query_frame, res):
         normal = normalizeCellEuclidean(one_query_cell, two_query_cell, int(len(one_query_cell)))
         cell_distance = np.sqrt(sum((one_query_cell - two_query_cell)**2))
 
-        total_distance = total_distance + cell_distance/normal
+        total_distance = total_distance + cell_distance
 
     return total_distance/res
 
@@ -147,9 +147,8 @@ def findSubsequence(queryIndex, a, b, k):
 
         # Calculating top k sequences from this object and finally adding to all sequences
         # and again reducing to final k in database
-        #object_file = database[database[:, 0] == object_file, :]
-
         all_seq_from_object = all_seq_from_object[(all_seq_from_object[:, 3]-all_seq_from_object[:, 2]) > ((b-a+1)*MIN_FRAMES_PREC), :]
+
         all_seq_from_object = all_seq_from_object[np.argsort(all_seq_from_object[:, 1])]
         final_seq_from_object = np.array([]).reshape(0, 4);
         for v in np.unique(all_seq_from_object[:, 3]):

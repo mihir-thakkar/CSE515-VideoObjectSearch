@@ -12,7 +12,7 @@ def reduce(d):
     pca.fit(allVectors)
     transformedPCA = pca.transform(allVectors);
     pca_database = np.column_stack((database[:, 0:3], transformedPCA))
-    np.savetxt('../Input/in_file_d.spca', pca_database, delimiter=',', fmt="%d,%d,%d," + "%.4f," * d)
+    np.savetxt('../Input/in_file_d.spca', pca_database, delimiter=',', fmt="%d,%d,%d" + ",%.4f" * d)
     score = pca.components_
     score_mat = np.array([]).reshape(0, 3)
     for i in range(0, score.shape[0]):
