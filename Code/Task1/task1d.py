@@ -16,10 +16,10 @@ def preprocessing():
 
     global fileIndex, revIndex, database, R
     #Original database
-    database = np.loadtxt('../../Input/in_file.sift', delimiter=",")
+    database = np.loadtxt('../../Input/in_file.sift.txt', delimiter=",")
 
     #Creating video name to video num index and reverse index
-    fileIndex = np.genfromtxt('../../Input/in_file.index1', delimiter="=", dtype=None, skip_header=1)
+    fileIndex = np.genfromtxt('../../Input/in_file.index', delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
