@@ -6,125 +6,84 @@ from scipy.spatial.distance import cdist
 from sklearn import preprocessing as pp
 import re
 
-global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL
+global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, MV_DIR_COL, MV_SRCX_COL, MV_SRCY_COL, MV_DSTX_COL, MV_DSTY_COL
 START_COL = 0
 VIDEO_NUM_COL = 0
 FRAME_NUM_COL = 1
-CELL_NUM_COL = 3
+CELL_NUM_COL = 2
+MV_DIR_COL = 3
+MV_SRCX_COL = 6
+MV_SRCY_COL = 7
+MV_DSTX_COL = 8
+MV_DSTY_COL = 9
+
+global MV_RX_COL, MV_RY_COL
+MV_RX_COL = 3
+MV_RY_COL = 4
 
 global SEQ_BREAK_THRESHOLD, MIN_FRAMES_PREC
 SEQ_BREAK_THRESHOLD = 5
 MIN_FRAMES_PREC = 0.25
 
-global INPUT_PREFIX, INPUT_DB_CH, INPUT_DB_INDEX, INPUT_VIDEO_PREFIX, SEQ_PREFIX
+global INPUT_PREFIX, INPUT_DB_MV, INPUT_DB_INDEX, INPUT_VIDEO_PREFIX, SEQ_PREFIX
 INPUT_DB_PREFIX = "../../Input/"
-INPUT_DB_CH = "in_file.chst"
+INPUT_DB_MV = "in_file.mvect"
 INPUT_DB_INDEX = "in_file.index"
 INPUT_VIDEO_PREFIX = "../../Input/Videos/"
 SEQ_PREFIX = "../../Output/Seq/"
 
 def preprocessing():
-    global fileIndex, revIndex, database
-    # Reading database
-    database = np.loadtxt(INPUT_DB_PREFIX+INPUT_DB_CH, delimiter=",")
+    global fileIndex, revIndex, database, R
+    #Original database
+    original_database = np.loadtxt(INPUT_DB_PREFIX+INPUT_DB_MV, delimiter=",", skiprows=1)
+    R = np.max(original_database[:, CELL_NUM_COL])
+    transformedDatabase = original_database
+    #Removed source, width, height and converted srcx, srcy, dstx, dsty to vector x and y magnitude
+    transformedDatabase = np.column_stack((transformedDatabase[:, VIDEO_NUM_COL:CELL_NUM_COL+1], transformedDatabase[:, MV_DSTX_COL] - transformedDatabase[:, MV_SRCX_COL], transformedDatabase[:, MV_DSTY_COL] - transformedDatabase[:, MV_SRCY_COL]))
+    #Removed zero motion vectors
+    database_ired = transformedDatabase[(transformedDatabase[:, MV_RX_COL] != 0) | (transformedDatabase[:, MV_RY_COL] != 0), :]
+    #Scaling motion vector lengths between 0 and 1
+    scaler = pp.MinMaxScaler().fit(database_ired[:, MV_RX_COL:])
+    database_ired = np.column_stack((database_ired[:, 0:MV_RX_COL], scaler.transform(database_ired[:, MV_RX_COL:])))
+    database = database_ired
 
-    #Creating file index
+    #Creating video name to video num index and reverse index
     fileIndex = np.genfromtxt(INPUT_DB_PREFIX+INPUT_DB_INDEX, delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
-def getDistanceQuadratic( one_query_frame, two_query_frame, res):
-    total_distance = 0.0
-
-    # Get the sim matrix
-    bins = int(len(one_query_frame[1, 3:]))
-    simMatrix = similaritiyMatrix(bins)
-
-    # Compute the distance for each cell
-    for j in range(0, res):
-        one_query_cell = one_query_frame[j, 3:]
-        two_query_cell = two_query_frame[j, 3:]
-
-        normal = normalizeCellQuadratic(one_query_cell, two_query_cell, simMatrix, bins)
-        cell_distance = np.sqrt(sum((one_query_cell - two_query_cell)**2))
-
-        total_distance = total_distance + cell_distance/normal
-
-    return total_distance/res
-
-def similaritiyMatrix (bins):
-
-    # Initialize the similaritiy matrix
-    simMatrix = np.ones((bins, bins))
-
-    # Edges
-    edges = np.ones((bins+1, 1))
-    mid_edges = np.ones((bins, 1))
-
-    # Compute the edges
-    edges[0] = 0
-    dis_edges = 255 / float(bins)
-
-    for edges_i in range(1, bins+1):
-        edges[edges_i] = edges[edges_i-1] + dis_edges
-
-    # Compute the midpoints
-    for mid_i in range(0, bins):
-        mid_edges[mid_i] = (edges[mid_i] + edges[mid_i+1]) /2
-
-    # Compute the Matrix
-    for tall in range(0, bins):
-        for wide in range(0, bins):
-            simMatrix[tall][wide] = abs(mid_edges[tall] - mid_edges[wide])
-
-    simMatrix = 1 - simMatrix / 255
-
-    return simMatrix
-
-def normalizeCellQuadratic(file_one, file_two, simMatrix, bins):
-    pixles_f1 = sum(abs(file_one))
-    pixles_f2 = sum(abs(file_two))
-
-    if bins == 1:
-        return abs(pixles_f1 - pixles_f2)
-    else:
-        f1_vector = np.zeros((1, bins))
-        f2_vector = np.zeros((bins, 1))
-        f1_vector[0][0] = pixles_f1
-        f2_vector[-1] = pixles_f2
-
-        results = np.multiply(f1_vector, simMatrix)
-        results = np.multiply(f2_vector, results)
-
-        return np.sqrt(results[-1][0])
-
-
 def computeDistance(object, query, a, b):
+    #Object Frames
+    oFrameNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
 
-    # Gets the max object frames
-    max_object_frames = int(object[-1, FRAME_NUM_COL])
+    #Query Frames
+    qFrameNos = np.transpose(np.unique(query[:, FRAME_NUM_COL]))
 
-    # Get the number for r
-    res = int(object[-1, 2])
-
-    # Gets the distance matrix
-    oframeNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
-    frameToFrameIndex = np.array([]).reshape(0, oframeNos.size)
-    frameToFrameDist = np.array([]).reshape(0, oframeNos.size)
-
-    # Start frames to frames
-    for i in range(a, b+1):
-        one_query_frame = query[query[:, FRAME_NUM_COL] == i, :]
+    frameToFrameIndex = np.array([]).reshape(0, oFrameNos.size)
+    frameToFrameDist = np.array([]).reshape(0, oFrameNos.size)
+    for qFrameNo in np.nditer(qFrameNos):
+        qFrame = query[query[:, 1] == qFrameNo, CELL_NUM_COL:]
+        qCellNos = np.transpose(np.unique(qFrame[:, 0]))
         frameDist = np.array([]).reshape(0, 2)
-
-        for j in range(1, max_object_frames+1):
-            two_query_frame = object[object[:, FRAME_NUM_COL] == j, :]
-
-            # Compare the distance
-            distance = getDistanceQuadratic(one_query_frame, two_query_frame, res)
-            frameDist = np.vstack([frameDist, [j, distance]])
-
-        # Sort and get frameToFrameIndex and frameToFrameDist
+        for oFrameNo in np.nditer(oFrameNos):
+            oFrame = object[object[:, 1] == oFrameNo, CELL_NUM_COL:]
+            oCellNos = np.transpose(np.unique(oFrame[:, 0]))
+            meanD = 0
+            for cellNo in range(1, int(R+1)):
+                qcExist = cellNo in oCellNos
+                ocExist = cellNo in qCellNos
+                #Calculating distance for cells which exist in both frames
+                #Else distance is 1 as because one cell has motion and other has none
+                if qcExist and ocExist:
+                    #Euclidean distance comparison
+                    frameD = cdist(qFrame[qFrame[:,0]==cellNo, 1:], oFrame[oFrame[:,0]==cellNo, 1:], 'euclidean')
+                    #Most similar vectors
+                    minD = np.amin(frameD, axis=1)
+                    meanD += np.mean(minD)
+                elif qcExist or ocExist:
+                    meanD += 1
+            meanD /= R
+            frameDist = np.vstack([frameDist, [oFrameNo, meanD]])
         frameDist = frameDist[np.argsort(frameDist[:, 1])]
         frameToFrameIndex = np.vstack([frameToFrameIndex, frameDist[:, 0].T])
         frameToFrameDist = np.vstack([frameToFrameDist, frameDist[:, 1].T])
@@ -201,6 +160,8 @@ def findSubsequence(queryIndex, a, b, k):
 
         # Calculating top k sequences from this object and finally adding to all sequences
         # and again reducing to final k in database
+        #object_file = database[database[:, 0] == object_file, :]
+
         all_seq_from_object = all_seq_from_object[(all_seq_from_object[:, 3]-all_seq_from_object[:, 2]) > ((b-a+1)*MIN_FRAMES_PREC), :]
         all_seq_from_object = all_seq_from_object[np.argsort(all_seq_from_object[:, 1])]
         final_seq_from_object = np.array([]).reshape(0, 4);
@@ -212,9 +173,9 @@ def findSubsequence(queryIndex, a, b, k):
         allSeq = np.vstack([allSeq, final_seq_from_object])
         allSeq = allSeq[np.argsort(allSeq[:, 1])]
         allSeq = allSeq[0:k, :]
-    saveAndShowSubsequence(queryIndex, a, b, allSeq)
+    saveAndShowSubsequence(queryIndex, a, b, k, allSeq)
 
-def saveAndShowSubsequence(queryIndex, a, b, kseq):
+def saveAndShowSubsequence(queryIndex, a, b, k, kseq):
     qFileName = re.sub('\.mp4$', '', revIndex[int(queryIndex)])
     seqDir = SEQ_PREFIX + qFileName + '_a_'+ `int(a)` + '_b_' + `int(b)`+ '_k_' + `int(k)` + '/'
     if not os.path.exists(seqDir):
