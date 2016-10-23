@@ -18,7 +18,6 @@ def preprocessing():
     #Creating file index
     fileIndex = np.genfromtxt('../../Input/in_file.index', delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
-    #revIndex = dict([i.reverse() for i in fileIndex])
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
 def getDistanceEuclidean( one_query_frame, two_query_frame, res):
@@ -46,38 +45,35 @@ def normalizeCellEuclidean(file_one, file_two, bins):
     else:
         return np.sqrt(pixles_f1 ** 2 + pixles_f2 ** 2)
 
-def myMethod(object_file, query_file_frames, a, b):
+def myMethod(object, query, a, b):
 
     # Gets the max object frames
-    max_object_frames = int(object_file[-1, 1])
+    max_object_frames = int(object[-1, FRAME_NUM_COL])
 
     # Get the number for r
-    res = int(object_file[-1, 2])
+    res = int(object[-1, 2])
 
     # Gets the distance matrix
-    distanceMatrix = np.array([]).reshape(object_file.shape[0].)
+    oframeNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
+    frameToFrameIndex = np.array([]).reshape(0, oframeNos.size)
+    frameToFrameDist = np.array([]).reshape(0, oframeNos.size)
 
     # Start frames to frames
-    for i in range(a, b):
-        one_query_frame = query_file_frames[query_file_frames[:, 1] == i, :]
-        add_list = list()
+    for i in range(a, b+1):
+        one_query_frame = query[query[:, FRAME_NUM_COL] == i, :]
+        frameDist = np.array([]).reshape(0, 2)
 
-        for j in range(1, max_object_frames):
-            two_query_frame = object_file[object_file[:, 1] == j, :]
+        for j in range(1, max_object_frames+1):
+            two_query_frame = object[object[:, FRAME_NUM_COL] == j, :]
 
             # Compare the distance
             distance = getDistanceEuclidean(one_query_frame, two_query_frame, res)
+            frameDist = np.vstack([frameDist, [j, distance]])
 
-            add_list.append(distance)
-
-        distanceMatrix.append(add_list)
-
-    # Sort and get frameToFrameIndex and frameToFrameDist
-
-    for i in range(a, b):
-
-
-
+        # Sort and get frameToFrameIndex and frameToFrameDist
+        frameDist = frameDist[np.argsort(frameDist[:, 1])]
+        frameToFrameIndex = np.vstack([frameToFrameIndex, frameDist[:, 0].T])
+        frameToFrameDist = np.vstack([frameToFrameDist, frameDist[:, 1].T])
     return (frameToFrameIndex, frameToFrameDist)
 
 def findSubsequence(queryIndex, a, b, k):
