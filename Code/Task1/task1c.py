@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn import preprocessing as pp
 from scipy.spatial.distance import cdist
 
 global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, MV_DIR_COL, MV_SRCX_COL, MV_SRCY_COL, MV_DSTX_COL, MV_DSTY_COL
@@ -16,8 +15,7 @@ database = None
 def preprocessing():
     global fileIndex, revIndex, database, R
     #Original database
-    original_database = np.loadtxt('../../Input/in_file.sift', delimiter=",")
-    R = np.max(original_database[:, CELL_NUM_COL])
+    database = np.loadtxt('../../Input/in_file.sift', delimiter=",")
 
     #Creating video name to video num index and reverse index
     fileIndex = np.genfromtxt('../../Input/in_file.index1', delimiter="=", dtype=None, skip_header=1)
