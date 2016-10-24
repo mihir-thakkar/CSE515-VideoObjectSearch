@@ -23,4 +23,4 @@ Note: Enter inputs as promted on the console
 
 Expected output:
     
-    Each task outputs new files with reduced dimensions using PCA and K-means clustering respectively.
+    Each task outputs new files with reduced dimensions using PCA and K-means clustering respectively and corresponding scores for reduced dimensions.
