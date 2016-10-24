@@ -1,5 +1,5 @@
 function sim = task1g(videoName1, videoName2)
-% calculate the overall similarity with histogram Euclidean, Sift , motion
+% calculate the overall similarity with histogram Euclidean, Sift Euclidean, motion
 % similarity.
 histSimWeight = 0.4609;
 siftSimWeight = 0.5157;
