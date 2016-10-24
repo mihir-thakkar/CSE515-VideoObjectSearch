@@ -61,7 +61,7 @@ if __name__ == '__main__':
         d = int(input("Enter the target dimensionality: "))
         if d <=0 :
             print 'Target Dimensionality must be positive.'
-        elif d > (database.shape[1]-3) :
+        elif d > (database_ired.shape[1]-3) :
             print 'Target Dimensionality must be less or equal to existing dimensionality.'
         else : flag = 0
     reduce(d)
