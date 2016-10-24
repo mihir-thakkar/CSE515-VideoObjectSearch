@@ -1,15 +1,17 @@
 import numpy as np
 from scipy.spatial.distance import cdist
 
-global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SIFT_DES_START
+global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SIFT_DES_START, SIFT_THRESHOLD
 START_COL = 0
 VIDEO_NUM_COL = 0
 FRAME_NUM_COL = 1
 CELL_NUM_COL = 2
 SIFT_DES_START = 7
+SIFT_THRESHOLD = 1
 
 database = None
 def preprocessing():
+
     global fileIndex, revIndex, database, R
     #Original database
     database = np.loadtxt('../../Input/in_file.sift', delimiter=",")
@@ -20,6 +22,7 @@ def preprocessing():
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
 def computeSimilarity(queryIndex, objectIndex):
+
     object = database[database[:, VIDEO_NUM_COL] == objectIndex, VIDEO_NUM_COL:]
     oframeNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
 
@@ -29,18 +32,18 @@ def computeSimilarity(queryIndex, objectIndex):
     frameMeans = np.array([]).reshape(1, 0)
     for qframeNo in np.nditer(qframeNos):
         qframe = query[query[:, FRAME_NUM_COL] == qframeNo, SIFT_DES_START:]
-        frameDist = np.array([]).reshape(0, 2)
+        frameSim = np.array([]).reshape(0, 2)
         for oframeNo in np.nditer(oframeNos):
             oframe = object[object[:, FRAME_NUM_COL] == oframeNo, SIFT_DES_START:]
-            frameD = cdist(qframe, oframe, 'euclidean')
-            minD = np.amin(frameD, axis=1)
-            meanD = np.mean(minD)
-            frameDist = np.vstack([frameDist, [oframeNo, meanD]])
-        frameDist = frameDist[np.argsort(frameDist[:, 1])]
-        frameMeans = np.column_stack((frameMeans, [frameDist[0, 1]]))
-    vidDistance = np.mean(frameMeans)
-    vidSimilarity = 1 - vidDistance
-    return vidSimilarity
+            frameD = cdist(qframe, oframe, 'sqeuclidean')
+            frameD.sort(axis=1)
+            matches = frameD[(frameD[:,1] / frameD[:,0]) > SIFT_THRESHOLD, :]
+            sim = len(matches) / len(qframe)
+            frameSim = np.vstack([frameSim, [oframeNo, sim]])
+        frameSim = frameSim[np.argsort(frameSim[:, 1])]
+        frameMeans = np.column_stack((frameMeans, [frameSim[-1, 1]]))
+    vidSim = np.mean(frameMeans)
+    return vidSim
 
 if __name__ == '__main__':
     print 'Loading and Preprocessing database......'
