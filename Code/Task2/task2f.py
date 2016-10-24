@@ -52,7 +52,7 @@ def preprocessing():
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
-def computeDistance(object, query, a, b):
+def computeDistance(object, query):
     #Object Frames
     oFrameNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
 
