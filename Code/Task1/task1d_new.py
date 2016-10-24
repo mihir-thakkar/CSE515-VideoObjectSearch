@@ -32,7 +32,7 @@ def computeSimilarity(queryIndex, objectIndex):
         frameDist = np.array([]).reshape(0, 2)
         for oframeNo in np.nditer(oframeNos):
             oframe = object[object[:, FRAME_NUM_COL] == oframeNo, SIFT_DES_START:]
-            frameD = cdist(qframe, oframe, 'euclidean')
+            frameD = cdist(qframe, oframe, 'cosine')
             minD = np.amin(frameD, axis=1)
             meanD = np.mean(minD)
             frameDist = np.vstack([frameDist, [oframeNo, meanD]])
