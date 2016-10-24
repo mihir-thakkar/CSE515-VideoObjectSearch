@@ -110,7 +110,7 @@ end
 
 function [number_file] = getFileNumber(file_name)
     
-    fileID = fopen('Input/in_file.index1','r');
+    fileID = fopen('Input/in_file.index','r');
     fileIndex = textscan(fileID,'%s %d','delimiter','=','headerLines', 1);
     fclose(fileID);
     
