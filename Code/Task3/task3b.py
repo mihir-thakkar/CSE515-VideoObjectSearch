@@ -24,7 +24,7 @@ def reduce(d):
     pca = PCA(n_components=d)
     pca.fit(allVectors)
     transformedPCA = pca.transform(allVectors);
-    pca_database = np.column_stack((database[:, VIDEO_NUM_COL:SIFT_DES_START], transformedPCA))
+    pca_database = np.column_stack((database[:, VIDEO_NUM_COL:(SIFT_DES_START-4)], transformedPCA))
     np.savetxt(INPUT_DB_PREFIX+OUTPUT_PCA_DB_SIFT, pca_database, delimiter=',', fmt="%d,%d,%d" + ",%.4f" * d)
     score = pca.components_
     score_mat = np.array([]).reshape(0, 3)
