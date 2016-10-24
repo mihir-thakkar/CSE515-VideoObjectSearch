@@ -36,10 +36,7 @@ def preprocessing():
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
 def computeDistance(object, query):
-    object = database[database[:, VIDEO_NUM_COL] == object, VIDEO_NUM_COL:]
     oframeNos = np.transpose(np.unique(object[:, FRAME_NUM_COL]))
-
-    query = database[database[:, VIDEO_NUM_COL] == query, VIDEO_NUM_COL:]
     qframeNos = np.transpose(np.unique(query[:, FRAME_NUM_COL]))
 
     frameToFrameIndex = np.array([]).reshape(0, oframeNos.size)
@@ -73,7 +70,7 @@ def findSubsequence(queryIndex, a, b, k):
         object = database[database[:, VIDEO_NUM_COL] == objectIndex, 0:]
         all_seq_from_object = np.array([]).reshape(0, 4)
         # Call function here and get these two matrix
-        (frameToFrameIndex, frameToFrameDist) = computeDistance(object, query, a, b)
+        (frameToFrameIndex, frameToFrameDist) = computeDistance(object, query)
         (rowLen, colLen) = frameToFrameIndex.shape
         for c in range(0, colLen):
             seq = np.array([])
