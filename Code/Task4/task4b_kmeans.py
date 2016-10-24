@@ -1,22 +1,35 @@
 import numpy as np
-from scipy.spatial.distance import cdist
 import imageio
+import os
+import shutil
+from scipy.spatial.distance import cdist
+from sklearn import preprocessing as pp
+import re
 
-global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SEQ_BREAK_THRESHOLD, SIFT_VECTOR_START_COL
+global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL
 START_COL = 0
 VIDEO_NUM_COL = 0
 FRAME_NUM_COL = 1
 CELL_NUM_COL = 3
+
+global SEQ_BREAK_THRESHOLD, MIN_FRAMES_PREC
 SEQ_BREAK_THRESHOLD = 5
-SIFT_VECTOR_START_COL = 7
+MIN_FRAMES_PREC = 0.25
+
+global INPUT_PREFIX, INPUT_DB_CH, INPUT_DB_INDEX, INPUT_VIDEO_PREFIX, SEQ_PREFIX
+INPUT_DB_PREFIX = "../../Input/"
+INPUT_DB_CH = "in_file_d.ckm"
+INPUT_DB_INDEX = "in_file.index"
+INPUT_VIDEO_PREFIX = "../../Input/Videos/"
+SEQ_PREFIX = "../../Output/Seq/"
 
 def preprocessing():
     global fileIndex, revIndex, database
     # Reading database
-    database = np.loadtxt('../../Input/in_file_d.cpca', delimiter=",")
+    database = np.loadtxt(INPUT_DB_PREFIX+INPUT_DB_CH, delimiter=",")
 
     #Creating file index
-    fileIndex = np.genfromtxt('../../Input/in_file.index', delimiter="=", dtype=None, skip_header=1)
+    fileIndex = np.genfromtxt(INPUT_DB_PREFIX+INPUT_DB_INDEX, delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
 
@@ -33,7 +46,8 @@ def getDistanceQuadratic( one_query_frame, two_query_frame, res):
         two_query_cell = two_query_frame[j, 3:]
 
         normal = normalizeCellQuadratic(one_query_cell, two_query_cell, simMatrix, bins)
-        cell_distance = np.sqrt(sum((one_query_cell - two_query_cell)**2))
+        diffMat = one_query_cell - two_query_cell
+        cell_distance = np.sqrt(np.dot(diffMat.T, np.dot(simMatrix,diffMat)))
 
         total_distance = total_distance + cell_distance/normal
 
@@ -69,24 +83,24 @@ def similaritiyMatrix (bins):
     return simMatrix
 
 def normalizeCellQuadratic(file_one, file_two, simMatrix, bins):
-    pixles_f1 = sum(file_one)
-    pixles_f2 = sum(file_two)
+    pixles_f1 = sum(abs(file_one))
+    pixles_f2 = sum(abs(file_two))
 
     if bins == 1:
         return abs(pixles_f1 - pixles_f2)
     else:
         f1_vector = np.zeros((1, bins))
-        f2_vector = np.zeros((bins, 1))
+        f2_vector = np.zeros((1, bins))
         f1_vector[0][0] = pixles_f1
-        f2_vector[-1] = pixles_f2
+        f2_vector[0][-1] = pixles_f2
 
-        results = np.multiply(f1_vector, simMatrix)
-        results = np.multiply(f2_vector, results)
+        diffMat = f1_vector - f2_vector
+        results = np.dot(np.dot(diffMat, simMatrix),diffMat.T)
 
-        return np.sqrt(results[-1][0])
+        return results
 
 
-def myMethod(object, query, a, b):
+def computeDistance(object, query, a, b):
 
     # Gets the max object frames
     max_object_frames = int(object[-1, FRAME_NUM_COL])
@@ -131,7 +145,7 @@ def findSubsequence(queryIndex, a, b, k):
         object = database[database[:, VIDEO_NUM_COL] == objectIndex, 0:]
         all_seq_from_object = np.array([]).reshape(0, 4)
         # Call function here and get these two matrix
-        (frameToFrameIndex, frameToFrameDist) = myMethod(object, query, a, b)
+        (frameToFrameIndex, frameToFrameDist) = computeDistance(object, query, a, b)
         (rowLen, colLen) = frameToFrameIndex.shape
         for c in range(0, colLen):
             seq = np.array([])
@@ -188,6 +202,7 @@ def findSubsequence(queryIndex, a, b, k):
 
         # Calculating top k sequences from this object and finally adding to all sequences
         # and again reducing to final k in database
+        all_seq_from_object = all_seq_from_object[(all_seq_from_object[:, 3]-all_seq_from_object[:, 2]) > ((b-a+1)*MIN_FRAMES_PREC), :]
         all_seq_from_object = all_seq_from_object[np.argsort(all_seq_from_object[:, 1])]
         final_seq_from_object = np.array([]).reshape(0, 4);
         for v in np.unique(all_seq_from_object[:, 3]):
@@ -201,10 +216,16 @@ def findSubsequence(queryIndex, a, b, k):
     saveAndShowSubsequence(queryIndex, a, b, allSeq)
 
 def saveAndShowSubsequence(queryIndex, a, b, kseq):
+    qFileName = re.sub('\.mp4$', '', revIndex[int(queryIndex)])
+    seqDir = SEQ_PREFIX + qFileName + '_a_'+ `int(a)` + '_b_' + `int(b)`+ '_k_' + `int(k)` + '/'
+    if not os.path.exists(seqDir):
+        os.makedirs(seqDir)
+    else :
+        shutil.rmtree(seqDir)
+        os.makedirs(seqDir)
     #Saving query seq
-    objectFile = imageio.get_reader('../../Input/DataR/' + revIndex[int(queryIndex)], 'ffmpeg')
-    writer = imageio.get_writer(
-        'querySeq fn' + `int(a)` + '-' + `int(b)` + ' ' + revIndex[int(queryIndex)], fps=30)
+    objectFile = imageio.get_reader(INPUT_VIDEO_PREFIX + revIndex[int(queryIndex)], 'ffmpeg')
+    writer = imageio.get_writer(seqDir + 'querySeq.mp4', fps=30)
     for i in range(int(a), int(b + 1)):
         oimage = objectFile.get_data(i)
         writer.append_data(oimage)
@@ -212,27 +233,33 @@ def saveAndShowSubsequence(queryIndex, a, b, kseq):
 
     # Saving found seq
     for index, row in enumerate(kseq):
-        objectFile = imageio.get_reader('../../Input/DataR/' + revIndex[int(row[0])], 'ffmpeg')
-        writer = imageio.get_writer('seq' + `index` + ' fn' + `int(row[2])` + '-' + `int(row[3])` + ' ' + revIndex[int(row[0])], fps=30)
+        objectFile = imageio.get_reader(INPUT_VIDEO_PREFIX + revIndex[int(row[0])], 'ffmpeg')
+        writer = imageio.get_writer(seqDir + 'seq' + `index` + ' fn' + `int(row[2])` + '-' + `int(row[3])` + ' ' + revIndex[int(row[0])], fps=30)
         for i in range(int(row[2]), int(row[3] + 1)):
             oimage = objectFile.get_data(i)
             writer.append_data(oimage)
-        writer.close();
+        writer.close()
 
 if __name__ == '__main__':
+    print 'Loading and Preprocessing database......'
     preprocessing()
-    flag = 1
-    while flag :
-        queryFileName = input("Enter the query file name: ")
-        if queryFileName in fileIndex:
-            a = int(input("Enter the query sequence start frame num: "))
-            b = int(input("Enter the query sequence end frame num: "))
-            k = int(input("Enter the k : "))
-            if k <= 0:
-                print 'k must be positive.'
+    while 1:
+        while 1:
+            queryFileName = raw_input("Enter the query file name: ")
+            if queryFileName in fileIndex:
+                a = int(input("Enter the query sequence start frame num: "))
+                b = int(input("Enter the query sequence end frame num: "))
+                k = int(input("Enter the k : "))
+                if k <= 0:
+                    print 'k must be positive.'
+                else:
+                    break
             else:
-                flag = 0
-        else:
-            print 'Given file name does not exist in database.'
-
-    findSubsequence(fileIndex[queryFileName], a, b, k)
+                print 'Given file name does not exist in database.'
+        findSubsequence(fileIndex[queryFileName], a, b, k)
+        print "Please check sequences in Output folder."
+        print "************************************************"
+        print "************************************************"
+        cont = raw_input("Do you want to continue, y/n: ")
+        if cont == 'n':
+            break
