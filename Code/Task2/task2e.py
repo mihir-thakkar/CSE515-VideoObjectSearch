@@ -103,7 +103,7 @@ def findSubsequence(queryIndex, a, b, k):
         object = database[database[:, VIDEO_NUM_COL] == objectIndex, 0:]
         all_seq_from_object = np.array([]).reshape(0, 4)
         # Call function here and get these two matrix
-        (frameToFrameIndex, frameToFrameDist) = computeDistance(object, query, a, b)
+        (frameToFrameIndex, frameToFrameDist) = computeDistance(object, query)
         (rowLen, colLen) = frameToFrameIndex.shape
         for c in range(0, colLen):
             seq = np.array([])
