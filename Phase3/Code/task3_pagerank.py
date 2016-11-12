@@ -75,7 +75,7 @@ def preProcessing(m):
 
     # Clear the file
     transfile = open("../Input/" + "trans_output_t2.gspc", "wb")
-    printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "wb")
+    printerFile = open("../Output/" + "output_t3_" + str(m) + ".pgr", "wb")
     printerFile.close()
 
     # Load the database
