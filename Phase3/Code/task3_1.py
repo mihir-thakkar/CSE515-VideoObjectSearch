@@ -1,3 +1,6 @@
+# Read the graph from INPUT_FILE which is created by task 2 and output a Node rank to OUTPUT_FILE
+# The output node format: vi_fi
+# Usage: run the code directly, change the INPUT_FILE or OUTPUT_FILE as need.
 import networkx as nx
 import re
 import operator
@@ -25,7 +28,7 @@ with open(INPUT_FILE, 'r') as ins:
         add_edges_from_line(D, line);
 prs = nx.pagerank(D);
 sorted_prs = sorted(prs.items(), key=operator.itemgetter(1), reverse=True);
-print sorted_prs;
+# print sorted_prs;
 w = csv.writer(open(OUTPUT_FILE, 'w'));
 for key, val in sorted_prs:
     w.writerow([key, val]);
