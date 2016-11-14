@@ -7,29 +7,9 @@ import operator
 global INPUT_FILE
 INPUT_FILE = "../Output/output_t2_d_5.gspc"
 
-VIDEO_NUM_COL = 0
-FRAME_NUM_COL = 1
-
-QUERY_VIDEO_NUM_COL = 0
-QUERY_FRAME_NUM_COL = 1
-OBJECT_VIDEO_NUM_COL = 2
-OBJECT_FRAME_NUM_COL = 3
-SIMILARITY_COL = 4
-
 def creatGraph(m):
     #creat a new graph
     G = nx.DiGraph()
-
-    total_number_videos = database[-1, VIDEO_NUM_COL]
-    for query_video_number in range(1, int(total_number_videos + 1)):
-        query_video = database[database[:, VIDEO_NUM_COL] == query_video_number, VIDEO_NUM_COL:]
-
-        # Get the number of frames for the video
-        query_frameNos = np.transpose(np.unique(query_video[:, FRAME_NUM_COL]))
-
-        for query_frame_number in np.nditer(query_frameNos):
-            #print query_video_number, ",", query_frame_number, "\n"
-            G.add_node((int(query_video_number),int(query_frame_number)))
 
     #get the database size
     (row, column) = database.shape
@@ -52,18 +32,19 @@ def creatGraph(m):
 
                 #weight = similarity/total_similarity -> normalize
                 weight = database[r, c]/totalweight
-
+                # add node
+                G.add_node((int(q_video_number), int(q_frame_number)))
                 # add edge weight
                 G.add_edge((int(q_video_number),int(q_frame_number)), (int(o_video_number),int(o_frame_number)), weight=weight)
 
     #calculate page_rank
-    pr = nx.pagerank(G, alpha=0.9)
+    pr = nx.pagerank(G)
     # SORT edge weight
     sorted_pr = sorted(pr.items(), key=operator.itemgetter(1), reverse=True)
     printInfo(sorted_pr, m)
 
 def printInfo(page_rank, m):
-    printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "ab")
+    printerFile = open("../Output/" + "output_t3_" + str(m) + ".pgr", "ab")
 
     for M in range(m):
         printerFile.write(str(page_rank[M]))
