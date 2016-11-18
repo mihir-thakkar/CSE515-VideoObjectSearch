@@ -14,7 +14,6 @@ SIFT_DES_START = 7
 global INPUT_FILE
 INPUT_FILE = "../Input/in_file.sift"
 
-
 # Function : genDict
 # Description: This function generates all the nodes for the graph
 def genNodes(k):
@@ -33,7 +32,7 @@ def genNodes(k):
         for query_frame_number in np.nditer(query_frameNos):
 
             # Get the query frame using query_frame_number
-            query_frame = query_video[query_video[:, FRAME_NUM_COL] == query_frame_number, SIFT_DES_START:]
+            query_frame = query_video[query_video[:, FRAME_NUM_COL] == query_frame_number, :]
 
             # List of the most similar frames
             query_frame_k_values = list()
@@ -52,25 +51,10 @@ def genNodes(k):
                     for object_frame_number in np.nditer(object_frameNos):
 
                         # Get the object frame
-                        object_frame = object_video[object_video[:, FRAME_NUM_COL] == object_frame_number,
-                                       SIFT_DES_START:]
-
-                        # Compute similarity values between ith cells
-                        total_cells = np.transpose(np.unique(object_video[:, CELL_NUM_COL]))
-                        cell_sim_values = list()
-
-                        for cell in np.nditer(total_cells):
-                            object_frame_cell = object_frame[object_frame[:, CELL_NUM_COL] == cell, SIFT_DES_START:]
-                            query_frame_cell = query_frame[query_frame[:, CELL_NUM_COL] == cell, SIFT_DES_START:]
-
-                            # Append cell similarity value to array of cell similarities
-                            cell_sim_values.append(1 - computeDistance(object_frame_cell, query_frame_cell))
+                        object_frame = object_video[object_video[:, FRAME_NUM_COL] == object_frame_number,:]
 
                         # Compute the similarities values for the object frame and query video
-                        sim_value = np.mean(cell_sim_values)
-
-                        # Empty the list with cell similarity values
-                        del cell_sim_values[:]
+                        sim_value = 1 - computeDistance(object_frame, query_frame)
 
                         # add to list
                         query_frame_k_values.append(
@@ -109,16 +93,31 @@ def printInfo(query_video_number, query_frame_number, query_frame_k_values):
 # Function : preProcessing
 # Description: This function computes the distance between two frames
 def computeDistance(qframe, oframe):
-    if qframe.shape[0] == 0:
-        return 0
-    if oframe.shape[0] == 0:
-        return 0
 
-    frameD = cdist(qframe, oframe, 'euclidean')
-    minD = np.amin(frameD, axis=1)
-    meanD = np.mean(minD)
+    # Compute similarity values between ith cells
+    query_cells = np.transpose(np.unique(qframe[:, CELL_NUM_COL]))
+    object_cells = np.transpose(np.unique(qframe[:, CELL_NUM_COL]))
+    total_cells = np.union1d(query_cells, object_cells)
 
-    return meanD
+    #iter through the cells
+    cell_sim_values = list()
+
+    for cell in np.nditer(total_cells):
+        object_frame_cell = oframe[oframe[:, CELL_NUM_COL] == cell, SIFT_DES_START:]
+        query_frame_cell = qframe[qframe[:, CELL_NUM_COL] == cell, SIFT_DES_START:]
+
+        if object_frame_cell.shape[0] == 0:
+            cell_sim_values.append(1)
+        elif query_frame_cell.shape[0] == 0:
+            cell_sim_values.append(1)
+        else:
+
+            framecellD = cdist(object_frame_cell, query_frame_cell, 'euclidean')
+            mincellD = np.amin(framecellD, axis=1)
+            meanD = np.mean(mincellD)
+            cell_sim_values.append(meanD)
+
+    return np.mean(cell_sim_values)
 
 
 # Function : preProcessing
