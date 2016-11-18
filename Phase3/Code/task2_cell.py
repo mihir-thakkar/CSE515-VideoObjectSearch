@@ -60,8 +60,8 @@ def genNodes(k):
                         cell_sim_values = list()
 
                         for cell in np.nditer(total_cells):
-                            object_frame_cell = object_video[object_frame[:, FRAME_NUM_COL] == cell, SIFT_DES_START:]
-                            query_frame_cell = query_video[query_frame[:, FRAME_NUM_COL] == cell, SIFT_DES_START:]
+                            object_frame_cell = object_frame[object_frame[:, CELL_NUM_COL] == cell, SIFT_DES_START:]
+                            query_frame_cell = query_frame[query_frame[:, CELL_NUM_COL] == cell, SIFT_DES_START:]
 
                             # Append cell similarity value to array of cell similarities
                             cell_sim_values.append(1 - computeDistance(object_frame_cell, query_frame_cell))
@@ -92,7 +92,7 @@ def genNodes(k):
 def printInfo(query_video_number, query_frame_number, query_frame_k_values):
 
     # Open the file to Edit
-    printerFile = open("../Output/" + "output_t2_d_" + str(k) + ".gspc", "ab")
+    printerFile = open("../Output/" + "output_t2_d_cell" + str(k) + ".gspc", "ab")
 
     # pint to the file
     for object_video_info, similarity in query_frame_k_values:
@@ -109,6 +109,11 @@ def printInfo(query_video_number, query_frame_number, query_frame_k_values):
 # Function : preProcessing
 # Description: This function computes the distance between two frames
 def computeDistance(qframe, oframe):
+    if qframe.shape[0] == 0:
+        return 0
+    if oframe.shape[0] == 0:
+        return 0
+
     frameD = cdist(qframe, oframe, 'euclidean')
     minD = np.amin(frameD, axis=1)
     meanD = np.mean(minD)
@@ -121,7 +126,7 @@ def computeDistance(qframe, oframe):
 def preProcessing(k):
 
     # Clear the file
-    printerFile = open("../Output/" + "output_t2_d_" + str(k) + ".gspc", "wb")
+    printerFile = open("../Output/" + "output_t2_d_cell" + str(k) + ".gspc", "wb")
     printerFile.close()
 
     # Load the database
