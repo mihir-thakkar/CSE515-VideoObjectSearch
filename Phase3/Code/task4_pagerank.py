@@ -5,7 +5,7 @@ import operator
 
 # graph file
 global INPUT_FILE
-INPUT_FILE = "output_t2_d_5.gspc"
+INPUT_FILE = "../Output/output_t2_d_5.gspc"
 global first_intput_video, first_intput_frame, \
     second_intput_video, second_intput_frame, \
     third_intput_video, third_intput_frame
@@ -48,7 +48,7 @@ def creatGraph(m):
     print G.out_degree((1,1),weight='weight')
 
 def printInfo(page_rank, m):
-    printerFile = open("output_t4_" + str(m) + ".pgr", "ab")
+    printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "ab")
 
     for M in range(m):
         printerFile.write(str(page_rank[M]))
@@ -59,8 +59,8 @@ def printInfo(page_rank, m):
 def preProcessing(m):
 
     # Clear the file
-    transfile = open("trans_output_t2.gspc", "wb")
-    printerFile = open("output_t4_" + str(m) + ".pgr", "wb")
+    transfile = open("../Input" + "trans_output_t2.gspc", "wb")
+    printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "wb")
     printerFile.close()
     # Load the database
     print 'Loading database......'
@@ -76,7 +76,7 @@ def preProcessing(m):
     transfile.close()
 
     global database
-    database = np.loadtxt("trans_output_t2.gspc", delimiter=",")
+    database = np.loadtxt("../Input/" + "trans_output_t2.gspc", delimiter=",")
     print 'Database loaded......'
 
 # Function : Main

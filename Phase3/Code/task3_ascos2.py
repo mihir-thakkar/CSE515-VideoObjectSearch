@@ -7,7 +7,7 @@ import math
 
 # graph file
 global INPUT_FILE
-INPUT_FILE = "output_t2_d_5.gspc"
+INPUT_FILE = "../Output/output_t2_d_5.gspc"
 
 def creatGraph(m):
     #creat a new graph
@@ -114,7 +114,7 @@ def _is_converge(sim, sim_old, nrow, ncol, eps=1e-4):
     return True
 
 def printInfo(sorted_ASCOS, m):
-    printerFile = open("output_t3_" + str(m) + ".ascos", "ab")
+    printerFile = open("../Output/" + "output_t3_" + str(m) + ".ascos", "ab")
 
     for M in range(m):
         printerFile.write(str(sorted_ASCOS[M]))
@@ -125,8 +125,8 @@ def printInfo(sorted_ASCOS, m):
 def preProcessing(m):
 
     # Clear the file
-    transfile = open("trans_output_t2.gspc", "wb")
-    printerFile = open("output_t3_" + str(m) + ".ascos", "wb")
+    transfile = open("../Input" + "trans_output_t2.gspc", "wb")
+    printerFile = open("../Output/" + "output_t3_" + str(m) + ".ascos", "wb")
     printerFile.close()
     # Load the database
     print 'Loading database......'
@@ -142,7 +142,7 @@ def preProcessing(m):
     transfile.close()
 
     global database
-    database = np.loadtxt("trans_output_t2.gspc", delimiter=",")
+    database = np.loadtxt("../Input" + "trans_output_t2.gspc", delimiter=",")
     print 'Database loaded......'
 
 # Function : Main
