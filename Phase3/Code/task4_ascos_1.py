@@ -105,7 +105,7 @@ if __name__ == '__main__':
     m = int(input("Enter m, for the m most significant frames (relative to the input frames):"))
     first_intput = input("Enter first input frame:")
     second_intput = input("Enter second input frame:")
-    third_intput = input("Enter 5 input frame:")
+    third_intput = input("Enter third input frame:")
     alpha = 0.85;
 
     D = nx.DiGraph();
@@ -132,7 +132,6 @@ if __name__ == '__main__':
     utils.output_a_frame(third_intput, 'input')
     counter = 1
     for key, val in sorted_prs:
-        w.writerow([key, val])
         # output frames
         if counter <= m:
             counter += 1

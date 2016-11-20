@@ -19,7 +19,7 @@ def output_frame(video_index, frame_index, output_name):
 
     video_name = revIndex[int(video_index)];
     objectFile = imageio.get_reader(INPUT_VIDEO_PATH + video_name, 'ffmpeg')
-    oimage = objectFile.get_data(frame_index)
+    oimage = objectFile.get_data(int(frame_index))
     imageio.imwrite(OUTPUT_PATH + output_name, oimage)
 
 
