@@ -50,9 +50,18 @@ def creatGraph(m):
 def printInfo(page_rank, m):
     printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "ab")
 
-    for M in range(m):
-        printerFile.write(str(page_rank[M]))
-        printerFile.write("\n")
+    M = 0
+    count = 0
+    while (count != m):
+        node, sim = page_rank[M]
+        if node != (first_intput_video, first_intput_frame) and \
+                        node != (second_intput_video, second_intput_frame) and \
+                        node != (third_intput_video, third_intput_frame):
+            print node
+            printerFile.write(str(page_rank[M]))
+            printerFile.write("\n")
+            count += 1;
+        M += 1
 
     printerFile.close()
 

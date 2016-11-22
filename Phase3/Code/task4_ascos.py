@@ -58,9 +58,6 @@ def ascos(G, c=0.9, alpha= 0.85, max_iter=100, is_weighted=False, remove_neighbo
 
     n = G.number_of_nodes()
     sim = np.eye(n)
-    # for i in range(n):
-    #     for n_i in nbs[i]:
-    #         sim[i, n_i] = G[node_ids[i]][node_ids[n_i]]['weight']
 
     sim_old = np.zeros(shape = (n, n))
     print n, "shit!!!"
@@ -126,9 +123,18 @@ def _is_converge(sim, sim_old, nrow, ncol, eps=1e-4):
 def printInfo(sorted_ASCOS, m):
     printerFile = open("../Output/" + "output_t4_" + str(m) + ".ascos", "ab")
 
-    for M in range(m):
-        printerFile.write(str(sorted_ASCOS[M]))
-        printerFile.write("\n")
+    M = 0
+    count = 0
+    while (count != m):
+        node, sim = sorted_ASCOS[M]
+        if node != (first_intput_video, first_intput_frame) and \
+                        node != (second_intput_video, second_intput_frame) and \
+                        node != (third_intput_video, third_intput_frame):
+            print node
+            printerFile.write(str(sorted_ASCOS[M]))
+            printerFile.write("\n")
+            count += 1;
+        M += 1
 
     printerFile.close()
 
