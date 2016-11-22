@@ -5,7 +5,7 @@ import operator
 
 # graph file
 global INPUT_FILE
-INPUT_FILE = "../Output/output_t2_d_5.gspc"
+INPUT_FILE = "../Output/output_t2_d_cell5.gspc"
 
 def creatGraph(m):
     #creat a new graph
@@ -52,6 +52,22 @@ def printInfo(page_rank, m):
 
     printerFile.close()
 
+def calculate_k():
+    column1 = ''
+    column2 = ''
+    count = 0;
+    with open(INPUT_FILE) as f:
+        for line in f:
+            a = line.split(',');
+            if column1 == '' and column2 == '':
+                column1 = a[0]
+                column2 = a[1]
+            elif column1 != a[0] or column2 != a[1]:
+                break
+            count += 1
+    return count;
+
+
 def preProcessing(m):
 
     # Clear the file
@@ -62,14 +78,19 @@ def preProcessing(m):
     # Load the database
     print 'Loading database......'
 
+    k = calculate_k()
+
+    count = 0
     with open(INPUT_FILE) as f:
         for line in f:
-            translation_table = string.maketrans("{()},", "     ")
-            splitline = line.translate(translation_table).split()
-            transfile.write(splitline[0])
-            for l in range(1, len(splitline)):
-                transfile.write(","+splitline[l])
-            transfile.write("\n")
+            line = line.strip('\n')
+            transfile.write(line)
+            count += 1
+            if count == k:
+                transfile.write("\n")
+                count = 0
+            else:
+                transfile.write(",")
 
     transfile.write("\n")
     transfile.close()
