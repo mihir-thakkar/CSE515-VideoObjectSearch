@@ -1,8 +1,7 @@
 import numpy as np
-from scipy.spatial.distance import cdist
-from sklearn.neighbors import LSHForest
 from nearpy import Engine
 from nearpy.hashes import RandomBinaryProjections
+from nearpy.distances import CosineDistance
 
 # SIFT desc Information
 global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SIFT_DES_START
@@ -16,7 +15,7 @@ SIFT_DES_START = 7
 
 # SIFT I/O Information
 global INPUT_FILE
-INPUT_FILE = "../Input/in_file.sift_phase1.txt"
+INPUT_FILE = "../Input/in_file.sift"
 
 # Function : LSH
 # Description: This function hashes the SIFT vectors
@@ -24,28 +23,44 @@ INPUT_FILE = "../Input/in_file.sift_phase1.txt"
 def LSH(Layers, K):
 
     lsh_vectors = database[:, LSH_VECT_START_COL:]
-    video_frame_cell_nums = database[:, 0:2]
+    video_data = database[:, 0:5]
 
-    # Dimension of our vector space
     num_rows, num_cols = lsh_vectors.shape
     dimension = num_cols
 
-    # Random binary projection list
     rbp = list()
     for i in range(Layers):
         rbp.append(RandomBinaryProjections(str(i), K))
 
     # Create engine with pipeline configuration
-    engine = Engine(dimension, lshashes=rbp)
+    engine = Engine(dimension, lshashes=rbp, distance=CosineDistance())
 
     # Index 1000000 random vectors (set their data zo a unique string)
     for index in range(num_rows):
-        v = np.random.randn(dimension)
-        #engine.store_vector(v, 'data_%d' % index)
-        ",".join(str(bit) for bit in video_frame_cell_nums)
-        engine.store_vector(v, )
+        v = lsh_vectors[index, :]
+
+        meta_data = '' + str(int(video_data[index, 0])) + ', ' + str(int(video_data[index, 1])) + ', ' + str(int(video_data[index, 2])) \
+                    + ', ' + str(video_data[index, 3]) + ', ' + str(video_data[index, 4])
+
+        engine.store_vector(v, meta_data)
+
+    printOutput(engine.storage.buckets)
 
     print 'stop'
+
+def printOutput(buckets):
+    # Open the file to Edit
+    printerFile = open("../Output/" + "filename_d.lsh", "wb")
+
+    for layers in buckets.keys():
+        current_layer= buckets[layers]
+        for new_buckets in current_layer.keys():
+            current_bucket = current_layer[new_buckets]
+            for current_point in current_bucket:
+                printerFile.write( layers + ', ' + new_buckets + ', ' + current_point[1])
+                printerFile.write("\n")
+
+    printerFile.close()
 
 # Function : preProcessing
 # Description: This function loads the database and clears the input file
