@@ -46,6 +46,9 @@ print sorted_prs;
 w = csv.writer(open(OUTPUT_FILE, 'w'));
 k = 1;
 for key, val in sorted_prs:
+    if key == input_frames[0] or key == input_frames[1] or key == input_frames[2]:
+        continue;
+    print key;
     w.writerow([key, val]);
     k = k + 1;
     if k > m:
