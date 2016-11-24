@@ -38,7 +38,7 @@ def creatGraph(m):
                 G.add_edge((int(q_video_number),int(q_frame_number)), (int(o_video_number),int(o_frame_number)), weight=weight)
 
     #calculate page_rank
-    pr = nx.pagerank(G)
+    pr = nx.page.rank(G)
     # SORT edge weight
     sorted_pr = sorted(pr.items(), key=operator.itemgetter(1), reverse=True)
     printInfo(sorted_pr, m)
