@@ -1,12 +1,13 @@
 import numpy as np
-import pandas as pd
 from sklearn.decomposition import PCA
 
 # I/O format
 global INPUT_FILE, OUTPUT_FILE, SCORE_FILE
-INPUT_FILE = "../Input/in_file.sift"
-OUTPUT_FILE = "../Output/filename_d.spc"
-SCORE_FILE = "../Output/scores.spc"
+INPUT_PREFIX = "../Input/"
+INPUT_FILE = "in_file.sift"
+OUTPUT_PREFIX = "../Output/"
+OUTPUT_FILE = "in_file_d.spc"
+SCORE_FILE = "in_file_d.score"
 
 # SIFT format
 global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SIFT_DES_START
@@ -14,7 +15,7 @@ START_COL = 0
 VIDEO_NUM_COL = 0
 FRAME_NUM_COL = 1
 CELL_NUM_COL = 2
-SIFT_DES_START = 7
+SIFT_DES_START = 5
 
 def preprocessing():
     # Load the data
@@ -31,7 +32,7 @@ def reduce(d):
     # Print the actual database
     transformedPCA = pca.transform(allVectors)
     pca_database = np.column_stack((database[:, VIDEO_NUM_COL:SIFT_DES_START], transformedPCA))
-    np.savetxt(OUTPUT_FILE, pca_database, delimiter=',', fmt="%d,%d,%d" + ",%.4f" * (d+4))
+    np.savetxt(OUTPUT_FILE, pca_database, delimiter=',', fmt="%d,%d,%d" + ",%.4f" * (d+2))
 
     # Print the scores
     whole_list = list()
@@ -49,9 +50,13 @@ def reduce(d):
 
 
 if __name__ == '__main__':
+    flag = 1
+    INPUT_FILE = raw_input("Enter the input file name(File should exist in Input directory): ")
+    fileName = INPUT_FILE.split(".")[0]
+    INPUT_FILE = INPUT_PREFIX+INPUT_FILE
     print 'Loading and Preprocessing database......'
     preprocessing()
-    flag = 1
+
     while flag :
         d = int(input("Enter the target dimensionality: "))
         if d <=0 :
@@ -59,4 +64,6 @@ if __name__ == '__main__':
         elif d > (database.shape[1]-7) :
             print 'Target Dimensionality must be less or equal to existing dimensionality.'
         else : flag = 0
+    OUTPUT_FILE = OUTPUT_PREFIX + fileName + "_" + str(d) + ".spc"
+    SCORE_FILE = OUTPUT_PREFIX + fileName + "_" + str(d) + ".score"
     reduce(d)

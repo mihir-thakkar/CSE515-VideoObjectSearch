@@ -33,13 +33,13 @@ def LSH(Layers, K):
         rbp.append(RandomBinaryProjections(str(i), K))
 
     # Create engine with pipeline configuration
-    engine = Engine(dimension, lshashes=rbp, distance=CosineDistance())
+    engine = Engine(dimension, lshashes=rbp)
 
     # Index 1000000 random vectors (set their data zo a unique string)
     for index in range(num_rows):
         v = lsh_vectors[index, :]
 
-        meta_data = '' + str(int(video_data[index, 0])) + ', ' + str(int(video_data[index, 1])) + ', ' + str(int(video_data[index, 2])) \
+        meta_data = str(index)+',' + str(int(video_data[index, 0])) + ', ' + str(int(video_data[index, 1])) + ', ' + str(int(video_data[index, 2])) \
                     + ', ' + str(video_data[index, 3]) + ', ' + str(video_data[index, 4])
 
         engine.store_vector(v, meta_data)
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     # Take k as an input
     L = int(input("Enter L, for L layers of LSH: "))
     K = int(input("Enter K, for 2^K buckets in each hash layer: "))
-
+    K = 2 ** K
     # Pre-processing
     preProcessing()
 

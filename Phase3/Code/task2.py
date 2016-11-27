@@ -1,19 +1,23 @@
 import numpy as np
 from scipy.spatial.distance import cdist
+from sklearn import preprocessing as pp
+import math
 
 # SIFT desc Information
-global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SIFT_DES_START
+global START_COL, VIDEO_NUM_COL, FRAME_NUM_COL, CELL_NUM_COL, SIFT_DES_START, MAX_DIST
 START_COL = 0
 VIDEO_NUM_COL = 0
 FRAME_NUM_COL = 1
 CELL_NUM_COL = 2
-SIFT_DES_START = 7
+SIFT_DES_START = 5
+MAX_DIST = 0
 
 
 # SIFT I/O Information
-global INPUT_FILE
-INPUT_FILE = "../Input/in_file.sift"
-
+INPUT_PREFIX = "../Input/"
+INPUT_FILE = "in_file_d.spc"
+OUTPUT_PREFIX = "../Output/"
+OUTPUT_FILE = "in_file_d_k.gspc"
 
 # Function : genDict
 # Description: This function generates all the nodes for the graph
@@ -56,7 +60,7 @@ def genNodes(k):
                                        SIFT_DES_START:]
 
                         # Compute the similarities values for the object frame and query video
-                        sim_value = 1 - computeDistance(object_frame, query_frame)
+                        sim_value = 1 - computeDistance(query_frame, object_frame)
 
                         # add to list
                         query_frame_k_values.append(
@@ -78,7 +82,7 @@ def genNodes(k):
 def printInfo(query_video_number, query_frame_number, query_frame_k_values):
 
     # Open the file to Edit
-    printerFile = open("../Output/" + "output_t2_d_" + str(k) + ".gspc", "ab")
+    printerFile = open(OUTPUT_FILE, "ab")
 
     # pint to the file
     for object_video_info, similarity in query_frame_k_values:
@@ -98,36 +102,45 @@ def computeDistance(qframe, oframe):
     frameD = cdist(qframe, oframe, 'euclidean')
     minD = np.amin(frameD, axis=1)
     meanD = np.mean(minD)
-
+    meanD = meanD / MAX_DIST
     return meanD
-
 
 # Function : preProcessing
 # Description: This function loads the database and clears the input file
-def preProcessing(k):
+def preProcessing(fileName, k):
 
+    global database, MAX_DIST, OUTPUT_FILE
     # Clear the file
-    printerFile = open("../Output/" + "output_t2_d_" + str(k) + ".gspc", "wb")
+    OUTPUT_FILE = OUTPUT_PREFIX + fileName + "_" + str(k) + ".gspc"
+    printerFile = open(OUTPUT_FILE, "wb")
     printerFile.close()
 
     # Load the database
     print 'Loading database......'
 
-    global database
     database = np.loadtxt(INPUT_FILE, delimiter=",")
-
+    scaler = pp.MinMaxScaler().fit(database[:, SIFT_DES_START:])
+    database = np.column_stack((database[:, 0:SIFT_DES_START], scaler.transform(database[:, SIFT_DES_START:])))
+    MAX_DIST = math.sqrt(database.shape[1] - SIFT_DES_START)
     print 'Database loaded......'
 
 
 # Function : Main
 # Description: Run the main program
 if __name__ == '__main__':
-
+    INPUT_FILE = raw_input("Enter the input file name(File should exist in Input directory): ")
+    fileName = INPUT_FILE.split(".")[0]
+    INPUT_FILE = INPUT_PREFIX + INPUT_FILE
     # Take k as an input
-    k = int(input("Enter k, for the k most similar frames:"))
+    flag = 1
+    while flag :
+        k = int(input("Enter k, for the k most similar frames: "))
+        if k <=0 :
+            print 'K must be positive.'
+        else : flag = 0
 
     # Pre-processing
-    preProcessing(k)
+    preProcessing(fileName, k)
 
     # generate the Nodes for the graph
     genNodes(k)
