@@ -88,12 +88,10 @@ def printInfo(query_video_number, query_frame_number, query_frame_k_values):
     for object_video_info, similarity in query_frame_k_values:
         object_video_number, object_frame_number = object_video_info
 
-        printerFile.write("{(" + str(query_video_number) + ", " + str(query_frame_number) + "), " + "(" + str(
-            object_video_number) + ", " + str(object_frame_number) + ") " + str(similarity) + "}")
+        printerFile.write(str(query_video_number) + "," + str(query_frame_number) + "," + str(
+            object_video_number) + "," + str(object_frame_number) + "," + str(similarity) + "\n")
 
     # Close the file
-    printerFile.write("\n")
-
     printerFile.close()
 
 # Function : preProcessing

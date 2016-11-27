@@ -14,8 +14,10 @@ SIFT_DES_START = 7
 
 
 # SIFT I/O Information
-global INPUT_FILE
-INPUT_FILE = "../Input/in_file.sift"
+INPUT_PREFIX = "../Input/"
+INPUT_FILE = "in_file_d.spc"
+OUTPUT_PREFIX = "../Output/"
+OUTPUT_FILE = "in_file_d.lsh"
 
 # Function : LSH
 # Description: This function hashes the SIFT vectors
@@ -50,7 +52,7 @@ def LSH(Layers, K):
 
 def printOutput(buckets):
     # Open the file to Edit
-    printerFile = open("../Output/" + "filename_d.lsh", "wb")
+    printerFile = open(OUTPUT_FILE, "wb")
 
     for layers in buckets.keys():
         current_layer= buckets[layers]
@@ -64,11 +66,13 @@ def printOutput(buckets):
 
 # Function : preProcessing
 # Description: This function loads the database and clears the input file
-def preProcessing():
+def preProcessing(fileName):
 
+    global OUTPUT_FILE
     # Clear the file
-    # printerFile = open("../Output/" + "output_t2_d_" + str(K) + ".gspc", "wb")
-    # printerFile.close()
+    OUTPUT_FILE = OUTPUT_PREFIX + fileName + ".lsh"
+    printerFile = open(OUTPUT_FILE, "wb")
+    printerFile.close()
 
     # Load the database
     print 'Loading database......'
@@ -82,13 +86,29 @@ def preProcessing():
 # Function : Main
 # Description: Run the main program
 if __name__ == '__main__':
+    INPUT_FILE = raw_input("Enter the input file name(File should exist in Input directory): ")
+    fileName = INPUT_FILE.split(".")[0]
+    INPUT_FILE = INPUT_PREFIX + INPUT_FILE
+    # Take L, k as an input
+    flag = 1
+    while flag:
+        L = int(input("Enter L, for L layers of LSH: "))
+        if L <= 0:
+            print 'L must be positive.'
+        else:
+            flag = 0
 
-    # Take k as an input
-    L = int(input("Enter L, for L layers of LSH: "))
-    K = int(input("Enter K, for 2^K buckets in each hash layer: "))
+    flag = 1
+    while flag:
+        K = int(input("Enter K, for 2^K buckets in each hash layer: "))
+        if K <= 0:
+            print 'K must be positive.'
+        else:
+            flag = 0
+
     K = 2 ** K
     # Pre-processing
-    preProcessing()
+    preProcessing(fileName)
 
     # Hash the vectors
     LSH(L,K)
