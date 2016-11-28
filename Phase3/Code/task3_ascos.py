@@ -1,3 +1,9 @@
+#    Copyright (C) 2004-2010 by
+#    Yu-hsuan Chuang <ychuang8@asu.edu>
+#    Hung-Hsuan Chen <hhchen@psu.edu>
+#    All rights reserved.
+#    BSD license.
+#    NetworkX:http://networkx.lanl.gov/.
 import numpy as np
 import string
 import networkx as nx
