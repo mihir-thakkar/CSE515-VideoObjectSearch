@@ -49,9 +49,10 @@ def visualizeTopRankFrames(sorted_dic, m, excluded_nodes_set=None):
         i += 1
 
 def clearOutputFramesDirectory():
-    filelist = [f for f in os.listdir(OUTPUT_PATH)]
-    for file in filelist:
-        os.remove(OUTPUT_PATH + file)
+    if os.path.isdir(OUTPUT_PATH):
+         filelist = [f for f in os.listdir(OUTPUT_PATH)]
+         for file in filelist:
+             os.remove(OUTPUT_PATH + file)
 
 def printTime(seconds):
     if seconds < 300:
