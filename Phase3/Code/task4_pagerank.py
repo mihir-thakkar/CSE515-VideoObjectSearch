@@ -134,6 +134,7 @@ if __name__ == '__main__':
     third_intput_video, third_intput_frame = input("Enter third input frame:")
     start_time = time.time();
     # visulization
+    utils.clearOutputFramesDirectory()
     utils.output_a_frame(first_intput_video, first_intput_frame, "Input");
     utils.output_a_frame(second_intput_video, second_intput_frame, "Input");
     utils.output_a_frame(third_intput_video, third_intput_frame, "Input");

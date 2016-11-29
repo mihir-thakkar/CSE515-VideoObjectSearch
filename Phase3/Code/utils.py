@@ -48,6 +48,11 @@ def visualizeTopRankFrames(sorted_dic, m, excluded_nodes_set=None):
             count += 1
         i += 1
 
+def clearOutputFramesDirectory():
+    filelist = [f for f in os.listdir(OUTPUT_PATH)]
+    for file in filelist:
+        os.remove(OUTPUT_PATH + file)
+
 def printTime(seconds):
     if seconds < 300:
         print "Time consumed: " + str(seconds) + " seconds."
