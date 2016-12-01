@@ -1,11 +1,16 @@
 import numpy as np
-import string
+import time
 import networkx as nx
 import operator
+import utils
 
 # graph file
-global INPUT_FILE
-INPUT_FILE = "../Output/output_t2_d_cell5.gspc"
+global INPUT_FILE, INPUT_PATH
+INPUT_PATH = "../Input/"
+INPUT_FILE = "in_file.gspc"
+
+global excluded_nodes_set
+
 global first_intput_video, first_intput_frame, \
     second_intput_video, second_intput_frame, \
     third_intput_video, third_intput_frame
@@ -45,7 +50,8 @@ def creatGraph(m):
     pr = nx.pagerank(G, alpha=0.9, personalization=personalize)
     sorted_pr = sorted(pr.items(), key=operator.itemgetter(1), reverse=True)
     printInfo(sorted_pr, m)
-    print G.out_degree((1,1),weight='weight')
+    #print G.out_degree((1,1),weight='weight')
+    utils.visualizeTopRankFrames(sorted_pr, m, excluded_nodes_set)
 
 def printInfo(page_rank, m):
     printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "ab")
@@ -83,7 +89,7 @@ def calculate_k():
 def preProcessing(m):
 
     # Clear the file
-    transfile = open("../Input" + "trans_output_t2.gspc", "wb")
+    transfile = open("../Input/" + "trans_output_t2.gspc", "wb")
     printerFile = open("../Output/" + "output_t4_" + str(m) + ".pgr", "wb")
     printerFile.close()
     # Load the database
@@ -113,10 +119,29 @@ def preProcessing(m):
 # Function : Main
 # Description: Run the main program
 if __name__ == '__main__':
+    try:
+        input_file = raw_input("Enter file name (default: in_file.gspc), the path is 'Input/', don't contain path:")
+    except SyntaxError:
+        input_file = None
+    if input_file is not None:
+        INPUT_FILE = input_file;
+    INPUT_FILE = INPUT_PATH + INPUT_FILE
+
     # Take k as an input
     m = int(input("Enter m, for the m most significant frames (relative to the input frames):"))
     first_intput_video, first_intput_frame = input("Enter first input frame:")
     second_intput_video, second_intput_frame = input("Enter second input frame:")
     third_intput_video, third_intput_frame = input("Enter third input frame:")
+    start_time = time.time();
+    # visulization
+    utils.clearOutputFramesDirectory()
+    utils.output_a_frame(first_intput_video, first_intput_frame, "Input");
+    utils.output_a_frame(second_intput_video, second_intput_frame, "Input");
+    utils.output_a_frame(third_intput_video, third_intput_frame, "Input");
+    excluded_nodes_set = {(first_intput_video, first_intput_frame),(second_intput_video, second_intput_frame),(third_intput_video, third_intput_frame)}
+
     preProcessing(m)
     creatGraph(m)
+
+    end_time = time.time();
+    utils.printTime(end_time - start_time)

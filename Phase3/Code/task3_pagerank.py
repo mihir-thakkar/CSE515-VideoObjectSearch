@@ -1,11 +1,13 @@
 import numpy as np
-import string
+import time
 import networkx as nx
 import operator
+import utils
 
 # graph file
-global INPUT_FILE
-INPUT_FILE = "../Output/output_t2_d_cell5.gspc"
+global INPUT_FILE, INPUT_PATH
+INPUT_PATH = "../Input/"
+INPUT_FILE = "in_file.gspc"
 
 def creatGraph(m):
     #creat a new graph
@@ -42,6 +44,8 @@ def creatGraph(m):
     # SORT edge weight
     sorted_pr = sorted(pr.items(), key=operator.itemgetter(1), reverse=True)
     printInfo(sorted_pr, m)
+    # visualization
+    utils.visualizeTopRankFrames(sorted_pr, m)
 
 def printInfo(page_rank, m):
     printerFile = open("../Output/" + "output_t3_" + str(m) + ".pgr", "ab")
@@ -103,9 +107,25 @@ def preProcessing(m):
 # Function : Main
 # Description: Run the main program
 if __name__ == '__main__':
+    try:
+        input_file = raw_input("Enter file name (default: in_file.gspc), the path is 'Input/', don't contain path:")
+    except SyntaxError:
+        input_file = None
+    if input_file is not None:
+        INPUT_FILE = input_file;
+    INPUT_FILE = INPUT_PATH + INPUT_FILE
 
     # Take k as an input
     m = int(input("Enter m, for the m most significant frames:"))
 
+    # count time consumed
+    start_time = time.time();
+    # visulization
+    utils.clearOutputFramesDirectory()
+
     preProcessing(m)
     creatGraph(m)
+
+    # count time consumed
+    end_time = time.time();
+    utils.printTime(end_time - start_time)

@@ -5,15 +5,17 @@
 #    BSD license.
 #    NetworkX:http://networkx.lanl.gov/.
 import numpy as np
-import string
+import time
 import networkx as nx
 import operator
 import copy
 import math
+import utils
 
 # graph file
-global INPUT_FILE
-INPUT_FILE = "../Output/output_t2_d_cell5.gspc"
+global INPUT_FILE, INPUT_PATH
+INPUT_PATH = "../Input/"
+INPUT_FILE = "in_file.gspc"
 
 def creatGraph(m):
     #creat a new graph
@@ -37,8 +39,10 @@ def creatGraph(m):
 
     ASCOS = ascos(G, is_weighted=True)
     sorted_ASCOS = sorted(ASCOS.items(), key=operator.itemgetter(1), reverse=True)
-    print sorted_ASCOS
+    #print sorted_ASCOS
     printInfo(sorted_ASCOS, m)
+    # visualization
+    utils.visualizeTopRankFrames(sorted_ASCOS, m)
 
 def ascos(G, c=0.9, max_iter=100, is_weighted=False, remove_neighbors=False, remove_self=False, dump_process=False):
 
@@ -146,7 +150,7 @@ def calculate_k():
 def preProcessing(m):
 
     # Clear the file
-    transfile = open("../Input" + "trans_output_t2.gspc", "wb")
+    transfile = open("../Input/" + "trans_output_t2.gspc", "wb")
     printerFile = open("../Output/" + "output_t3_" + str(m) + ".ascos", "wb")
     printerFile.close()
     # Load the database
@@ -170,14 +174,31 @@ def preProcessing(m):
     transfile.close()
 
     global database
-    database = np.loadtxt("../Input" + "trans_output_t2.gspc", delimiter=",")
+    database = np.loadtxt("../Input/" + "trans_output_t2.gspc", delimiter=",")
     print 'Database loaded......'
 
 # Function : Main
 # Description: Run the main program
 if __name__ == '__main__':
+    try:
+        input_file = raw_input("Enter file name (default: in_file.gspc), the path is 'Input/', don't contain path:")
+    except SyntaxError:
+        input_file = None
+    if input_file is not None:
+        INPUT_FILE = input_file;
+    INPUT_FILE = INPUT_PATH + INPUT_FILE
+
     # Take k as an input
     m = int(input("Enter m, for the m most significant frames (relative to the input frames):"))
 
+    # count time consumed
+    start_time = time.time();
+    # visualization
+    utils.clearOutputFramesDirectory()
+
     preProcessing(m)
     creatGraph(m)
+
+    # count time consumed
+    end_time = time.time();
+    utils.printTime(end_time - start_time)
