@@ -34,17 +34,14 @@ def preProcessing(fileName):
     print 'Loading database......'
 
     global database, databasePD
-    database = np.loadtxt(INPUT_PREFIX + fileName + ".lsh", delimiter=",")
+    database = np.loadtxt(INPUT_PREFIX + fileName + ".spc", delimiter=",")
     databasePD = pd.read_csv(INPUT_FILE,header=None,names=['b','h','i','v','f','c','x','y'])
-    print database.nbytes
-    print databasePD.m
     print 'Database loaded......'
 
     # Creating file index
     fileIndex = np.genfromtxt(INPUT_PREFIX + INPUT_DB_INDEX, delimiter="=", dtype=None, skip_header=1)
     fileIndex = dict(fileIndex)
     revIndex = {v: k for k, v in fileIndex.iteritems()}
-    print "stop"
 
 
 def search(N,V,F,X1,Y1,X2,Y2):
@@ -68,7 +65,6 @@ def search(N,V,F,X1,Y1,X2,Y2):
     print 'Unique Sift Vectors Considered from all buckets: %s' % str(uniqueSiftVectors)
     prunedData = database[result['i'],:]
     totalDataAccessSize += prunedData.nbytes
-    print 'Index Access Data Size: %s' % str(totalIndexAccessSize)
     print 'Original Database access Size: %s' % str(totalDataAccessSize)
 
     videoNos = np.transpose(np.unique(prunedData[:, 0]))
@@ -85,7 +81,7 @@ def search(N,V,F,X1,Y1,X2,Y2):
     frameSim = frameSim[np.argsort(frameSim[:, 2])]
 
     for i in range(0,N):
-        print 'Video No: %s Frame No: %s' % (str(frameSim[i,0]), str(frameSim[i,1]))
+        print 'Video No: %s Frame No: %s' % (str(int(frameSim[i,0])), str(int(frameSim[i,1])))
         outputFrame(frameSim[i,0],frameSim[i,1])
     print 'done'
 
@@ -93,7 +89,7 @@ def outputFrame(videoIndex, frameIndex):
 
     video = imageio.get_reader(INPUT_VIDEO_PREFIX + revIndex[int(videoIndex)], 'ffmpeg')
     frame = video.get_data(int(frameIndex))
-    imageio.imwrite(OUTPUT_FRAMES_PREFIX + "v"+ str(videoIndex) + "_f"+str(frameIndex) + '.jpg', frame)
+    imageio.imwrite(OUTPUT_FRAMES_PREFIX + "v"+ str(int(videoIndex)) + "_f"+str(int(frameIndex)) + '.jpg', frame)
 
 # Function : Main
 # Description: Run the main program
