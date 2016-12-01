@@ -59,7 +59,7 @@ def printOutput(buckets):
         for new_buckets in current_layer.keys():
             current_bucket = current_layer[new_buckets]
             for current_point in current_bucket:
-                printerFile.write( layers + ', ' + new_buckets + ', ' + current_point[1])
+                printerFile.write( layers + ', ' + str(int(new_buckets,2)) + ', ' + current_point[1])
                 printerFile.write("\n")
 
     printerFile.close()
@@ -105,8 +105,6 @@ if __name__ == '__main__':
             print 'K must be positive.'
         else:
             flag = 0
-
-    K = 2 ** K
     # Pre-processing
     preProcessing(fileName)
 
